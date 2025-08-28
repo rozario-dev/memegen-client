@@ -27,11 +27,11 @@ function App() {
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               🚀 Create Your
               <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                {' '}Viral Meme Coin
+                {' '}Viral Meme Image
               </span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Generate professional AI prompts for meme coin logos with just a few clicks.
+              Generate professional AI prompts for meme image logos with just a few clicks.
               Powered by advanced AI and optimized for Solana blockchain.
             </p>
             
@@ -64,7 +64,7 @@ function App() {
               <div className="space-y-8">
                 <div className="bg-white rounded-lg shadow-lg p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    🎨 Generate Your Meme Coin Prompt
+                    🎨 Generate Your Meme Image Prompt
                   </h2>
                   <MemeGenerationForm onGenerated={handleGenerated} />
                 </div>
@@ -91,7 +91,7 @@ function App() {
                     <div className="text-3xl mb-3">🎯</div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Solana Ready</h3>
                     <p className="text-gray-600 text-sm">
-                      Designed specifically for Solana meme coin launches
+                      Designed specifically for Solana meme image launches
                     </p>
                   </div>
                 </div> */}
@@ -105,7 +105,7 @@ function App() {
                     <div className="text-center">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mx-auto mb-3">1</div>
                       <h3 className="font-semibold text-gray-900 mb-2">Describe Your Meme</h3>
-                      <p className="text-sm text-gray-600">Enter your meme coin concept</p>
+                      <p className="text-sm text-gray-600">Enter your meme image concept</p>
                     </div>
                     
                     <div className="text-center">
@@ -123,7 +123,7 @@ function App() {
                     <div className="text-center">
                       <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 font-bold mx-auto mb-3">4</div>
                       <h3 className="font-semibold text-gray-900 mb-2">Launch Coin</h3>
-                      <p className="text-sm text-gray-600">Use prompt for your meme coin</p>
+                      <p className="text-sm text-gray-600">Use prompt for your meme image</p>
                     </div>
                   </div>
                 </div> */}

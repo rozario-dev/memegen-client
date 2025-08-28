@@ -129,7 +129,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         <ul className="text-sm text-yellow-700 space-y-1">
           <li>Copy the prompt above</li>
           <li>Use with AI image generators like Midjourney, DALL-E, or Stable Diffusion</li>
-          <li>Use the generated image for your meme coin launch</li>
+          <li>Use the generated image for your meme image launch</li>
         </ul>
       </div>
     </div>

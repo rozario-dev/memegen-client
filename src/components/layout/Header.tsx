@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   memeGen
                 </h1>
                 <p className="text-xs text-gray-500 hidden sm:block">
-                  AI-powered meme coin generator
+                  AI-powered meme generator
                 </p>
               </div>
             </div>
