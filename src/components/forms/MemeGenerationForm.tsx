@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useParameterOptions } from '../../hooks/useParameterOptions';
 import { useMemeGeneration } from '../../hooks/useMemeGeneration';
+import { LoginModal } from '../auth/LoginModal';
 import type { PromptRequest, PromptResponse } from '../../types/api';
 
 interface MemeGenerationFormProps {
@@ -9,9 +10,9 @@ interface MemeGenerationFormProps {
 }
 
 export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenerated }) => {
-  const { quota, refreshQuota } = useAuth();
+  const { quota, refreshQuota, isAuthenticated } = useAuth();
   const { options, loading: optionsLoading } = useParameterOptions();
-  const { generateSync, generateAsync, loading, error, result, taskStatus } = useMemeGeneration();
+  const { generateSync, loading, error, result } = useMemeGeneration();
 
   const [formData, setFormData] = useState<PromptRequest>({
     user_input: '',
@@ -23,7 +24,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   });
 
   const [charCount, setCharCount] = useState(0);
-  const [useAsync, setUseAsync] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     setCharCount(formData.user_input.length);
@@ -42,18 +43,21 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Check if user is authenticated first
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    // Check quota for authenticated users
     if (!quota || quota.remaining_quota <= 0) {
-      alert('You have no remaining quota. Please upgrade your subscription.');
+      setShowLoginModal(true);
       return;
     }
 
     try {
-      if (useAsync) {
-        await generateAsync(formData);
-      } else {
-        await generateSync(formData);
-        await refreshQuota();
-      }
+      await generateSync(formData);
+      await refreshQuota();
     } catch (error) {
       console.error('Generation failed:', error);
     }
@@ -196,19 +200,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
         </div>
 
-        {/* Async Toggle */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="use-async"
-            checked={useAsync}
-            onChange={(e) => setUseAsync(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="use-async" className="ml-2 block text-sm text-gray-700">
-            Generate asynchronously (recommended for complex requests)
-          </label>
-        </div>
+
 
         {/* Submit Button */}
         <button
@@ -231,7 +223,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           ) : quota && quota.remaining_quota <= 0 ? (
             'No Credits Remaining'
           ) : (
-            `Generate ${useAsync ? 'Async' : 'Sync'} (${quota?.remaining_quota || '0'} credits)`
+            `Generate (${quota?.remaining_quota || '0'} credits)`
           )}
         </button>
 
@@ -242,16 +234,14 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
         )}
 
-        {/* Task Status */}
-        {taskStatus && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
-              Status: {taskStatus.status}
-              {taskStatus.status === 'processing' && '...'}
-            </p>
-          </div>
-        )}
+
       </form>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   );
 };

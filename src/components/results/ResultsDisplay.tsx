@@ -22,17 +22,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     }
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([result.generated_prompt], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `meme-prompt-${result.id}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -74,7 +64,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 readOnly
                 className="w-full h-32 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
               />
-              <div className="absolute top-2 right-2 flex space-x-2">
+              <div className="absolute top-2 right-2">
                 <button
                   onClick={handleCopy}
                   className={`px-3 py-1 text-xs rounded ${
@@ -84,12 +74,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   }`}
                 >
                   {copied ? 'Copied!' : 'Copy'}
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Download
                 </button>
               </div>
             </div>
@@ -128,13 +112,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
               📋 Copy Prompt
-            </button>
-            
-            <button
-              onClick={handleDownload}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
-              💾 Download
             </button>
           </div>
 
