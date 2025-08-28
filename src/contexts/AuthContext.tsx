@@ -105,7 +105,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setQuota(null);
 
+      // Sign out from Supabase (handles Google and GitHub)
       await supabase.auth.signOut();
+
+      // Disconnect Solana wallet if connected
+      if (typeof window !== 'undefined' && 'solana' in window) {
+        const provider = (window as any).solana;
+        if (provider && provider.isPhantom && provider.isConnected) {
+          try {
+            await provider.disconnect();
+            console.log('Solana wallet disconnected');
+          } catch (solanaError) {
+            console.error('Error disconnecting Solana wallet:', solanaError);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error during logout:', error);
     }
