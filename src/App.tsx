@@ -25,7 +25,7 @@ function App() {
         <section className="py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              🚀 Create Your Next
+              🚀 Create Your
               <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 {' '}Viral Meme Coin
               </span>
@@ -70,7 +70,7 @@ function App() {
                 </div>
 
                 {/* Features Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
                   <div className="bg-white p-6 rounded-lg shadow-md">
                     <div className="text-3xl mb-3">🤖</div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered</h3>
@@ -94,10 +94,10 @@ function App() {
                       Designed specifically for Solana meme coin launches
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 {/* How It Works */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mt-12">
+                {/* <div className="bg-white rounded-lg shadow-lg p-6 mt-12">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     How It Works
                   </h2>
@@ -126,7 +126,7 @@ function App() {
                       <p className="text-sm text-gray-600">Use prompt for your meme coin</p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
           </div>

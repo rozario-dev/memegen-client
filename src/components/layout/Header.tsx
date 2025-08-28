@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             </div>
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            {/* <nav className="hidden md:flex items-center space-x-8">
               <a
                 href="#generate"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               >
                 About
               </a>
-            </nav>
+            </nav> */}
 
             {/* Wallet Button and Auth */}
             <div className="flex items-center space-x-4">              

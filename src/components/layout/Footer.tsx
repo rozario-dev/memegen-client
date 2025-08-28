@@ -4,8 +4,6 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
-  const currentYear = new Date().getFullYear();
-
   const socialLinks = [
     { 
       name: 'GitHub', 
@@ -38,105 +36,40 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
   return (
     <footer className={`bg-gray-50 border-t border-gray-200 transition-colors duration-300 ${className}`}>
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo Section */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center">
-              <img
-                src="/logo.svg"
-                alt="memeGen"
-                className="h-8 w-8"
-              />
-              <span className="ml-3 text-xl font-bold text-gray-900">
-                memeGen
-              </span>
-            </div>
-            <p className="mt-4 text-gray-600 text-sm">
-              AI-powered meme coin generator for the Solana ecosystem.
-              Create professional prompts for your next viral meme token.
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-              Quick Links
-            </h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <a href="#generate" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
-                  Generate Meme
-                </a>
-              </li>
-              <li>
-                <a href="#features" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#pricing" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
-                  Pricing
-                </a>
-              </li>
-            </ul>
-          </div>
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          {/* Copyright */}
+          <p className="text-gray-500 text-sm">
+            © 2025 memeGen. All rights reserved.
+          </p>
 
           {/* Social Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-              Connect
-            </h3>
-            <div className="mt-4 flex space-x-4">
-              {socialLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  <span className="sr-only">{link.name}</span>
-                  <span aria-label={link.name}>
-                    {link.icon}
-                  </span>
-                </a>
-              ))}
-            </div>
+          <div className="flex space-x-4">
+            {socialLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <span className="sr-only">{link.name}</span>
+                <span aria-label={link.name}>
+                  {link.icon}
+                </span>
+              </a>
+            ))}
           </div>
-        </div>
 
-        {/* Bottom Section */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">
-              © {currentYear} memeGen. All rights reserved.
-            </p>
-            <div className="mt-4 md:mt-0 flex space-x-6">
-              <a href="#privacy" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#terms" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-                Terms of Service
-              </a>
-              <a href="#contact" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-                Contact
-              </a>
-            </div>
+          {/* Policy Links */}
+          <div className="flex space-x-6">
+            <a href="#privacy" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+              Privacy Policy
+            </a>
+            <a href="#terms" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+              Terms of Service
+            </a>
           </div>
-        </div>
-
-        {/* Disclaimer */}
-        <div className="mt-8 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">
-            Built on Solana blockchain. Use responsibly and always do your own research (DYOR).
-            This tool is for educational and entertainment purposes.
-          </p>
         </div>
       </div>
     </footer>
