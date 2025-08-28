@@ -37,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   ];
 
   return (
-    <footer className={`bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-colors duration-300 ${className}`}>
+    <footer className={`bg-gray-50 border-t border-gray-200 transition-colors duration-300 ${className}`}>
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo Section */}
@@ -48,11 +48,11 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                 alt="memeGen"
                 className="h-8 w-8"
               />
-              <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">
+              <span className="ml-3 text-xl font-bold text-gray-900">
                 memeGen
               </span>
             </div>
-            <p className="mt-4 text-gray-600 dark:text-gray-300 text-sm">
+            <p className="mt-4 text-gray-600 text-sm">
               AI-powered meme coin generator for the Solana ecosystem.
               Create professional prompts for your next viral meme token.
             </p>
@@ -60,27 +60,27 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
               Quick Links
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#generate" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+                <a href="#generate" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
                   Generate Meme
                 </a>
               </li>
               <li>
-                <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+                <a href="#features" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
                   Features
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+                <a href="#about" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
                   About
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+                <a href="#pricing" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
                   Pricing
                 </a>
               </li>
@@ -89,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
           {/* Social Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
               Connect
             </h3>
             <div className="mt-4 flex space-x-4">
@@ -99,7 +99,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   <span className="sr-only">{link.name}</span>
                   <span aria-label={link.name}>
@@ -112,19 +112,19 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-8 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-gray-500 text-sm">
               © {currentYear} memeGen. All rights reserved.
             </p>
             <div className="mt-4 md:mt-0 flex space-x-6">
-              <a href="#privacy" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+              <a href="#privacy" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                 Privacy Policy
               </a>
-              <a href="#terms" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+              <a href="#terms" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                 Terms of Service
               </a>
-              <a href="#contact" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors">
+              <a href="#contact" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                 Contact
               </a>
             </div>
@@ -132,8 +132,8 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+        <div className="mt-8 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
             Built on Solana blockchain. Use responsibly and always do your own research (DYOR).
             This tool is for educational and entertainment purposes.
           </p>

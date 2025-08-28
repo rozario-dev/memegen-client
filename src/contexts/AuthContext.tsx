@@ -55,7 +55,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error('Failed to load user data after sign in:', error);
           }
         } else if (event === 'SIGNED_OUT') {
-          logout();
+          // Only clear local state if not already cleared
+          if (apiService.isAuthenticated()) {
+            apiService.clearToken();
+            setUser(null);
+            setQuota(null);
+          }
         }
       }
     );
@@ -94,13 +99,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async () => {
-    // Sign out from Supabase
-    await supabase.auth.signOut();
-    
-    // Clear local state
-    apiService.clearToken();
-    setUser(null);
-    setQuota(null);
+    try {
+      // Clear local state first
+      apiService.clearToken();
+      setUser(null);
+      setQuota(null);
+
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const refreshQuota = async () => {
