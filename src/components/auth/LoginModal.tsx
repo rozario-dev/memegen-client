@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { connectSolanaWallet, signMessage, generateAuthMessage, SolanaWalletError } from '../../lib/solana';
-import { apiService } from '../../services/api';
+import { connectSolanaWallet, SolanaWalletError } from '../../lib/solana';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,7 +9,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const { login } = useAuth();
+  const { setSolanaWallet } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
@@ -59,6 +58,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       console.log('Connecting to Solana wallet...');
       const publicKey = await connectSolanaWallet();
       console.log('Connected to Solana wallet:', publicKey);
+      
+      // Set the Solana wallet in auth context
+      setSolanaWallet(publicKey);
       
       // Step 3: Ensure wallet is connected
       if (!window.solana.isConnected) {

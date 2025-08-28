@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading, solanaWalletAddress } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -77,7 +77,31 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               ) : user ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
-                    {user.email}
+                    {(() => {
+                      console.log('User object:', user);
+                      console.log('User email:', user.email);
+                      console.log('User id:', user.id);
+                      console.log('Solana wallet address:', solanaWalletAddress);
+                      
+                      // If we have a Solana wallet address, use it
+                      if (solanaWalletAddress) {
+                        return `${solanaWalletAddress.slice(0, 4)}...${solanaWalletAddress.slice(-4)}`;
+                      }
+                      
+                      // Check if this is a Solana user based on email pattern
+                      const isSolanaUser = user.email?.includes('@solana.wallet') ||
+                                          !user.email || 
+                                          user.email === user.id;
+                      
+                      console.log('Is Solana user:', isSolanaUser);
+                      
+                      if (isSolanaUser && user.id) {
+                        return `${user.id.slice(0, 4)}...${user.id.slice(-4)}`;
+                      } else {
+                        return user.email || user.id;
+                      }
+                    })()
+                    }
                   </span>
                   <button
                     onClick={handleLogout}
@@ -128,6 +152,8 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
       />
+      
+
     </>
   );
 };

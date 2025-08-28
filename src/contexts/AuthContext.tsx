@@ -15,6 +15,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [quota, setQuota] = useState<QuotaResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [solanaWalletAddress, setSolanaWalletAddress] = useState<string | null>(null);
+
   const initializeAuth = useCallback(async () => {
     try {
       // Check for existing Supabase session first
@@ -51,6 +53,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           apiService.setToken(token);
           try {
             await loadUserData();
+            // Determine provider type
+            const provider = session.user?.app_metadata?.provider || 'unknown';
+            
+            // If this is a Solana login, get the wallet address
+            if (provider === 'solana' && typeof window !== 'undefined' && 'solana' in window) {
+              const solanaProvider = (window as any).solana;
+              if (solanaProvider && solanaProvider.publicKey) {
+                const walletAddress = solanaProvider.publicKey.toString();
+                setSolanaWalletAddress(walletAddress);
+                console.log('Solana wallet address stored:', walletAddress);
+              }
+            }
+            
+
           } catch (error) {
             console.error('Failed to load user data after sign in:', error);
           }
@@ -60,6 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             apiService.clearToken();
             setUser(null);
             setQuota(null);
+            setSolanaWalletAddress(null);
           }
         }
       }
@@ -150,6 +167,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiService.clearToken();
       setUser(null);
       setQuota(null);
+      setSolanaWalletAddress(null);
 
       // Sign out from Supabase (handles Google and GitHub)
       await supabase.auth.signOut();
@@ -182,6 +200,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+
+
+  const setSolanaWallet = (walletAddress: string) => {
+    setSolanaWalletAddress(walletAddress);
+    console.log('Solana wallet address set:', walletAddress);
+  };
+
   const isAuthenticated = apiService.isAuthenticated();
 
   const value: AuthContextType = {
@@ -192,6 +217,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     refreshQuota,
     isAuthenticated,
+
+    solanaWalletAddress,
+    setSolanaWallet,
   };
 
   return (
