@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { connectSolanaWallet, signMessage, generateAuthMessage, SolanaWalletError } from '../../lib/solana';
+import { apiService } from '../../services/api';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -48,32 +50,65 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setIsLoading(true);
       setLoadingProvider('solana');
       
-      // Check if Phantom wallet is available
-      if (typeof window !== 'undefined' && 'solana' in window) {
-        const provider = (window as any).solana;
-        
-        if (provider.isPhantom) {
-          // Connect to Phantom wallet
-          const response = await provider.connect();
-          const publicKey = response.publicKey.toString();
-          
-          // Here you would typically sign a message to verify ownership
-          // For now, we'll use a simple approach
-          console.log('Connected to Solana wallet:', publicKey);
-          
-          // You might want to create a custom auth flow for Solana
-          // For now, we'll just close the modal
-          alert('Solana wallet connected! (Custom auth flow needed)');
-          onClose();
-        } else {
-          alert('Please install Phantom wallet to connect with Solana');
-        }
-      } else {
-        alert('Solana wallet not detected. Please install Phantom wallet.');
+      // Step 1: Check if Solana wallet is available
+      if (!window.solana) {
+        throw new Error('Solana wallet not found. Please install a Solana wallet like Phantom.');
       }
+      
+      // Step 2: Connect to Solana wallet
+      console.log('Connecting to Solana wallet...');
+      const publicKey = await connectSolanaWallet();
+      console.log('Connected to Solana wallet:', publicKey);
+      
+      // Step 3: Ensure wallet is connected
+      if (!window.solana.isConnected) {
+        console.log('Wallet not connected, attempting to connect...');
+        await window.solana.connect();
+      }
+      
+      console.log('Wallet connection status:', window.solana.isConnected);
+      console.log('Wallet public key:', window.solana.publicKey?.toString());
+      
+      // Step 4: Use Supabase's native Web3 authentication
+      console.log('Attempting Supabase Web3 authentication...');
+      const { data, error } = await supabase.auth.signInWithWeb3({
+        chain: 'solana',
+        statement: 'I accept the Terms of Service and want to sign in to this application',
+      });
+      
+      if (error) {
+        console.error('Supabase Web3 signin error:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        
+        // Check if it's a configuration issue
+        if (error.message?.includes('Web3 provider not enabled') || 
+            error.message?.includes('provider not configured')) {
+          throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
+        }
+        
+        throw new Error(`Web3 authentication failed: ${error.message}`);
+      }
+      
+      if (data?.user) {
+        console.log('Supabase Web3 sign in successful!');
+        console.log('User ID:', data.user.id);
+        console.log('User metadata:', data.user.user_metadata);
+        console.log('User app metadata:', data.user.app_metadata);
+      }
+      
+      console.log('Solana authentication successful');
+      onClose();
+      
     } catch (error) {
-      console.error('Solana wallet connection error:', error);
-      alert('Failed to connect to Solana wallet');
+      console.error('Solana authentication error:', error);
+      
+      if (error instanceof SolanaWalletError) {
+        alert(error.message);
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        alert(`Authentication failed: ${(error as any).message}`);
+      } else {
+        alert('Failed to authenticate with Solana wallet. Please try again.');
+      }
     } finally {
       setIsLoading(false);
       setLoadingProvider(null);

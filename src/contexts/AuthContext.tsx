@@ -80,6 +80,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loadUserData = async () => {
     try {
+      const token = apiService.getToken();
+      
+      // Check if this is a Solana custom token
+      if (token && isSolanaCustomToken(token)) {
+        const solanaData = parseSolanaToken(token);
+        
+        // Create mock user data for Solana authentication
+         const mockQuota: QuotaResponse = {
+           user_id: solanaData.publicKey,
+           total_quota: 100,
+           used_quota: 0,
+           remaining_quota: 100,
+           reset_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+         };
+         
+         const mockUser: UserProfile = {
+           id: solanaData.publicKey,
+           email: `${solanaData.publicKey.slice(0, 8)}...@solana.wallet`,
+           quota: mockQuota,
+           created_at: new Date().toISOString()
+         };
+        
+        setUser(mockUser);
+        setQuota(mockQuota);
+        return;
+      }
+      
+      // For regular tokens, use API calls
       const [userData, quotaData] = await Promise.all([
         apiService.getUserProfile(),
         apiService.getUserQuota()
@@ -96,6 +124,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (token: string) => {
     apiService.setToken(token);
     await loadUserData();
+  };
+  
+  // Helper functions for Solana token handling
+  const isSolanaCustomToken = (token: string): boolean => {
+    try {
+      const decoded = JSON.parse(atob(token));
+      return decoded.provider === 'solana' && decoded.publicKey && decoded.signature;
+    } catch {
+      return false;
+    }
+  };
+  
+  const parseSolanaToken = (token: string) => {
+    try {
+      return JSON.parse(atob(token));
+    } catch {
+      throw new Error('Invalid Solana token format');
+    }
   };
 
   const logout = async () => {

@@ -148,6 +148,14 @@ class ApiService {
     return response.data;
   }
 
+  // Solana authentication (using custom token approach)
+  // Note: This method is no longer needed as we use custom token generation
+  // Keeping for potential future backend integration
+  async authenticateWithSolana(publicKey: string, signature: string, message: string): Promise<{ token: string; user: UserProfile }> {
+    // This endpoint doesn't exist yet - would need backend implementation
+    throw new Error('Solana backend authentication not implemented. Using custom token approach instead.');
+  }
+
   // Helper method for polling async tasks
   async pollTaskStatus(
     taskId: string,
