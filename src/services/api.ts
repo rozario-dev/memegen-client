@@ -9,7 +9,11 @@ import type {
   UsageHistory,
   UsageStats,
   HealthCheck,
-  ApiError
+  ApiError,
+  ImageGenerationRequest,
+  MultipleImageGenerationRequest,
+  ImageGenerationResponse,
+  MultipleImageGenerationResponse
 } from '../types/api';
 
 class ApiService {
@@ -96,8 +100,19 @@ class ApiService {
 
   // API endpoints
   async generatePrompt(request: PromptRequest): Promise<PromptResponse> {
-    const response = await this.api.post<PromptResponse>('/generate-prompt', request);
-    return response.data;
+    console.log('Sending request to /generate-prompt:', request);
+    try {
+      const response = await this.api.post<PromptResponse>('/generate-prompt', request);
+      console.log('Received response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('API request failed:', error);
+      // Check if it's a network error (backend not running)
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ECONNREFUSED') {
+        throw new Error('Backend service is not running. Please start the API server.');
+      }
+      throw error;
+    }
   }
 
   async generatePromptAsync(request: PromptRequest): Promise<{ task_id: string; status: string }> {
@@ -145,6 +160,24 @@ class ApiService {
 
   async getRoot(): Promise<Record<string, unknown>> {
     const response = await this.api.get('/');
+    return response.data;
+  }
+
+  // Image Generation endpoints
+  async generateImage(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    console.log('API: Sending image generation request to /images/generate:', request);
+    try {
+      const response = await this.api.post<ImageGenerationResponse>('/images/generate', request);
+      console.log('API: Received image generation response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('API: Image generation request failed:', error);
+      throw error;
+    }
+  }
+
+  async generateMultipleImages(request: MultipleImageGenerationRequest): Promise<MultipleImageGenerationResponse> {
+    const response = await this.api.post<MultipleImageGenerationResponse>('/images/generate-multiple', request);
     return response.data;
   }
 

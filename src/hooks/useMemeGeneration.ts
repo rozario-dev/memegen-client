@@ -78,7 +78,8 @@ export const useMemeGeneration = () => {
             parameters: {
             shape: '',
             text_option: '',
-            quality: ''
+            aspect_ratio: '',
+            image_format: ''
           },
             created_at: status.created_at,
             status: 'completed',

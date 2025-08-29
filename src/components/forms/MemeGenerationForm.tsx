@@ -18,7 +18,8 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     user_input: '',
     shape: 'circle',
     text_option: 'no_text',
-    quality: '8K',
+    aspect_ratio: '1:1',
+    image_format: 'png',
     style_preference: '',
     background_preference: '',
   });
@@ -153,17 +154,33 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
             </select>
           </div>
 
-          {/* Quality */}
+          {/* Aspect Ratio */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Quality</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Aspect Ratio</label>
             <select
-              value={formData.quality}
-              onChange={(e) => handleInputChange('quality', e.target.value)}
+              value={formData.aspect_ratio}
+              onChange={(e) => handleInputChange('aspect_ratio', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              {options.quality_options.map(quality => (
-                <option key={quality} value={quality}>
-                  {quality} - {options.descriptions.quality_options[quality]}
+              {options.aspect_ratios.map(ratio => (
+                <option key={ratio} value={ratio}>
+                  {ratio} - {options.descriptions.aspect_ratios[ratio]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Image Format */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Image Format</label>
+            <select
+              value={formData.image_format}
+              onChange={(e) => handleInputChange('image_format', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              {options.image_formats.map(format => (
+                <option key={format} value={format}>
+                  {format} - {options.descriptions.image_formats[format]}
                 </option>
               ))}
             </select>

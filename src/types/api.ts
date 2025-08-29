@@ -2,7 +2,8 @@ export interface PromptRequest {
   user_input: string;
   shape: ShapeType;
   text_option: TextOption;
-  quality: QualityOption;
+  aspect_ratio: AspectRatio;
+  image_format: ImageFormat;
   style_preference?: string;
   background_preference?: string;
 }
@@ -14,7 +15,8 @@ export interface PromptResponse {
   parameters: {
     shape: string;
     text_option: string;
-    quality: string;
+    aspect_ratio: string;
+    image_format: string;
     style_preference?: string;
     background_preference?: string;
   };
@@ -34,11 +36,13 @@ export interface TaskStatus {
 export interface ParameterOptions {
   shapes: string[];
   text_options: string[];
-  quality_options: string[];
+  aspect_ratios: string[];
+  image_formats: string[];
   descriptions: {
     shapes: Record<string, string>;
     text_options: Record<string, string>;
-    quality_options: Record<string, string>;
+    aspect_ratios: Record<string, string>;
+    image_formats: Record<string, string>;
   };
 }
 
@@ -106,17 +110,120 @@ export const TextOption = {
 
 export type TextOption = typeof TextOption[keyof typeof TextOption];
 
-export const QualityOption = {
-  ULTRA_HD: '8K',
-  HIGH_HD: '4K',
-  FULL_HD: '1080p',
-  HD: '720p',
-  STANDARD: '480p'
+export const AspectRatio = {
+  SQUARE: '1:1',
+  ULTRA_WIDE: '21:9',
+  WIDE: '16:9',
+  STANDARD_LANDSCAPE: '4:3',
+  CLASSIC_LANDSCAPE: '3:2',
+  CLASSIC_PORTRAIT: '2:3',
+  STANDARD_PORTRAIT: '3:4',
+  TALL_PORTRAIT: '9:16',
+  ULTRA_TALL: '9:21'
 } as const;
 
-export type QualityOption = typeof QualityOption[keyof typeof QualityOption];
+export type AspectRatio = typeof AspectRatio[keyof typeof AspectRatio];
+
+export const ImageFormat = {
+  PNG: 'png',
+  JPG: 'jpg',
+  WEBP: 'webp'
+} as const;
+
+export type ImageFormat = typeof ImageFormat[keyof typeof ImageFormat];
 
 export interface ApiError {
   detail: string;
   status?: number;
+}
+
+// Image Generation Types
+export const UserTier = {
+  FREE: 'free',
+  DEV: 'dev',
+  PRO: 'pro',
+  MAX: 'max'
+} as const;
+
+export type UserTier = typeof UserTier[keyof typeof UserTier];
+
+export interface ImageGenerationRequest {
+  prompt: string;
+  user_tier?: UserTier;
+  shape?: ShapeType;
+  aspect_ratio?: AspectRatio;
+  image_format?: ImageFormat;
+  negative_prompt?: string;
+  steps?: number;
+  cfg_scale?: number;
+  seed?: number;
+}
+
+export interface MultipleImageGenerationRequest {
+  prompt: string;
+  user_tier?: UserTier;
+  count?: number;
+  shape?: ShapeType;
+  aspect_ratio?: AspectRatio;
+  image_format?: ImageFormat;
+  negative_prompt?: string;
+  steps?: number;
+  cfg_scale?: number;
+}
+
+export interface GeneratedImage {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  format: string;
+  seed?: number;
+}
+
+export interface ImageGenerationResponse {
+  image_url: string;
+  image_uuid: string;
+  prompt: string;
+  negative_prompt?: string;
+  model: string;
+  model_name: string;
+  user_tier: string;
+  credits_consumed: number;
+  remaining_credits: number;
+  width: number;
+  height: number;
+  steps: number;
+  cfg_scale: number;
+  seed: number;
+  generation_time: number;
+  created_at: string;
+  shape: string;
+  aspect_ratio: string;
+  image_format: string;
+}
+
+export interface MultipleImageGenerationResponse {
+  images: {
+    image_url: string;
+    image_uuid: string;
+    prompt: string;
+    negative_prompt?: string;
+    model: string;
+    model_name: string;
+    user_tier: string;
+    credits_consumed: number;
+    remaining_credits: number;
+    width: number;
+    height: number;
+    steps: number;
+    cfg_scale: number;
+    seed: number;
+    generation_time: number;
+    created_at: string;
+    shape: string;
+    aspect_ratio: string;
+    image_format: string;
+  }[];
+  total_credits_consumed: number;
+  total_generation_time: number;
 }
