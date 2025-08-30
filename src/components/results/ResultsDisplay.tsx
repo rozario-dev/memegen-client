@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
-import type { PromptResponse, ImageGenerationRequest, MultipleImageGenerationRequest, GeneratedImage } from '../../types/api';
-import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
+import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
 
 interface ResultsDisplayProps {
-  result: PromptResponse;
+  result: DirectImageGenerationResponse;
   onRegenerate?: () => void;
+}
+
+interface ModifyState {
+  selectedImageUuid: string | null;
+  selectedImageUrl: string | null;
+  modifyPrompt: string;
+  isModifying: boolean;
+  error: string | null;
 }
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ 
@@ -13,10 +20,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onRegenerate 
 }) => {
   const [copied, setCopied] = useState(false);
-  const [generatingImage, setGeneratingImage] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [imageError, setImageError] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<UserTierType>('free');
+  const [modifyState, setModifyState] = useState<ModifyState>({
+    selectedImageUuid: null,
+    selectedImageUrl: null,
+    modifyPrompt: '',
+    isModifying: false,
+    error: null
+  });
+  const [modifiedImages, setModifiedImages] = useState<ImageModifyResponse[]>([]);
 
   const handleCopy = async () => {
     try {
@@ -28,304 +39,332 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     }
   };
 
-  const handleGenerateImage = async () => {
+  const handleImageClick = (imageUuid: string, imageUrl: string) => {
+    setModifyState(prev => ({
+      ...prev,
+      selectedImageUuid: prev.selectedImageUuid === imageUuid ? null : imageUuid,
+      selectedImageUrl: prev.selectedImageUuid === imageUuid ? null : imageUrl,
+      modifyPrompt: '',
+      error: null
+    }));
+  };
+
+  const handleModifyImage = async () => {
+    if (!modifyState.selectedImageUuid || !modifyState.selectedImageUrl || !modifyState.modifyPrompt.trim()) {
+      return;
+    }
+
+    setModifyState(prev => ({ ...prev, isModifying: true, error: null }));
+
     try {
-      setGeneratingImage(true);
-      setImageError(null);
-      
-      const imageRequest: ImageGenerationRequest = {
-        prompt: result.generated_prompt,
-        user_tier: selectedTier,
-        shape: (result.parameters.shape as any) || 'square',
-        aspect_ratio: (result.parameters as any).aspect_ratio || '1:1',
-        image_format: (result.parameters as any).image_format || 'png',
-        steps: 20,
-        cfg_scale: 7
+      const modifyRequest: ImageModifyRequest = {
+        prompt: modifyState.modifyPrompt.trim(),
+        seed_image: modifyState.selectedImageUrl,
+        user_tier: 'free' // Default tier, could be passed as prop
       };
-      
-      console.log('Sending image generation request:', imageRequest);
-      const response = await apiService.generateImage(imageRequest);
-      console.log('Received image generation response:', response);
-      
-      if (response.image_url) {
-        const generatedImage: GeneratedImage = {
-          id: response.image_uuid,
-          url: response.image_url,
-          width: response.width,
-          height: response.height,
-          format: response.image_format,
-          seed: response.seed
-        };
-        console.log('Setting generated images:', [generatedImage]);
-        setGeneratedImages([generatedImage]);
-      } else {
-        console.log('No image_url in response, response:', response);
-        setImageError('No image URL returned from API');
-      }
-    } catch (error) {
-      console.error('Image generation failed:', error);
-      setImageError(error instanceof Error ? error.message : 'Failed to generate image');
-    } finally {
-      setGeneratingImage(false);
+
+      const response = await apiService.modifyImage(modifyRequest);
+      setModifiedImages(prev => [...prev, response]);
+      setModifyState({
+        selectedImageUuid: null,
+        selectedImageUrl: null,
+        modifyPrompt: '',
+        isModifying: false,
+        error: null
+      });
+    } catch (error: any) {
+      console.error('Image modification failed:', error);
+      setModifyState(prev => ({
+        ...prev,
+        isModifying: false,
+        error: error?.message || 'Failed to modify image'
+      }));
     }
   };
 
-  const handleGenerateMultipleImages = async () => {
-    try {
-      setGeneratingImage(true);
-      setImageError(null);
-      
-      const imageRequest: MultipleImageGenerationRequest = {
-        prompt: result.generated_prompt,
-        user_tier: selectedTier,
-        shape: (result.parameters.shape as any) || 'square',
-        aspect_ratio: (result.parameters as any).aspect_ratio || '1:1',
-        image_format: (result.parameters as any).image_format || 'png',
-        steps: 20,
-        cfg_scale: 7,
-        count: 4
-      };
-      
-      console.log('Sending multiple image generation request:', imageRequest);
-      const response = await apiService.generateMultipleImages(imageRequest);
-      console.log('Received multiple image generation response:', response);
-      
-      if (response.images && response.images.length > 0) {
-        const generatedImages: GeneratedImage[] = response.images.map(img => ({
-          id: img.image_uuid,
-          url: img.image_url,
-          width: img.width,
-          height: img.height,
-          format: img.image_format,
-          seed: img.seed
-        }));
-        console.log('Setting generated images:', generatedImages);
-        setGeneratedImages(generatedImages);
-      } else {
-        console.log('No images in response, response:', response);
-        setImageError('No images returned from API');
-      }
-    } catch (error) {
-      console.error('Multiple image generation failed:', error);
-      setImageError(error instanceof Error ? error.message : 'Failed to generate images');
-    } finally {
-      setGeneratingImage(false);
-    }
-  };
-
-
+  // Create a unified image structure for display
+  const originalImages = result.images.map(img => ({
+    image_uuid: img.image_uuid,
+    image_url: img.image_url,
+    isModified: false
+  }));
+  
+  const modifiedImagesList = modifiedImages.map(img => ({
+    image_uuid: img.image_uuid,
+    image_url: img.image_url,
+    isModified: true
+  }));
+  
+  const allImages = [...originalImages, ...modifiedImagesList];
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
-          <h2 className="text-2xl font-bold text-white">Generated Prompt</h2>
-          <p className="text-blue-100 mt-1">Ready for AI image generation</p>
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            <h2 className="text-3xl font-bold text-white">Generated Meme Images</h2>
+          </div>
+          <p className="text-blue-100 mt-2 text-lg">Click on any image to modify it with AI</p>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Token Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Token Name</h3>
-              <p className="text-gray-600">{result.user_input}</p>
-            </div>
-            
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Symbol</h3>
-              <p className="text-gray-600 uppercase">
-                {result.user_input.split(' ').map(word => word.charAt(0)).join('').substring(0, 4)}
-              </p>
-            </div>
-            
-            {/* <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Description</h3>
-              <p className="text-gray-600 text-sm">{result.generated_prompt}</p>
-            </div> */}
-          </div>
-
           {/* Generated Prompt */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">AI Prompt for logo</h3>
-            <div className="relative">
-              <textarea
-                value={result.generated_prompt}
-                readOnly
-                className="w-full h-32 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
-              />
-              <div className="absolute top-2 right-2">
-                <button
-                  onClick={handleCopy}
-                  className={`px-3 py-1 text-xs rounded ${
-                    copied 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
               </div>
+              <h3 className="text-xl font-bold text-gray-800">Generated Prompt</h3>
+            </div>
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all duration-300">
+              <p className="text-gray-700 leading-relaxed font-medium">{result.generated_prompt}</p>
             </div>
           </div>
 
-          {/* Parameters */}
+
+
+          {/* Images Grid */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Parameters</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(result.parameters).map(([key, value]) => (
-                <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs font-medium text-gray-600 capitalize">
-                    {key.replace('_', ' ')}
-                  </p>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {String(value).replace('_', ' ')}
-                  </p>
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Generated Images</h3>
+              <div className="flex-1"></div>
+              <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                {allImages.length} image{allImages.length > 1 ? 's' : ''}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {allImages.map((imageResult, index) => (
+                 <div key={`${imageResult.image_uuid}-${index}`} className="relative group">
+                   <div 
+                     className={`relative overflow-hidden rounded-2xl border-3 cursor-pointer transition-all duration-500 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 ${
+                       modifyState.selectedImageUuid === imageResult.image_uuid
+                         ? 'border-blue-500 ring-4 ring-blue-200'
+                         : 'border-gray-200 hover:border-blue-400'
+                     }`}
+                     onClick={() => handleImageClick(imageResult.image_uuid, imageResult.image_url)}
+                   >
+                    <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
+                      <img
+                        src={imageResult.image_url}
+                        alt={`Generated image ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
+                        <p className="text-sm font-medium text-gray-800">Click to modify with AI</p>
+                      </div>
+                    </div>
+                    {/* Download Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(imageResult.image_url, '_blank');
+                      }}
+                      className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                      title="Open image in new tab"
+                    >
+                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </button>
+                    
+                    {imageResult.isModified && (
+                       <div className="absolute top-4 left-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">
+                         ✨ Modified
+                       </div>
+                     )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* User Tier Selection */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Select Tier</h3>
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(CREDIT_COSTS) as UserTierType[]).map((tier) => (
-                  <label key={tier} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="userTier"
-                      value={tier}
-                      checked={selectedTier === tier}
-                      onChange={(e) => setSelectedTier(e.target.value as UserTierType)}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      {USER_TIER_LABELS[tier]}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <div className="bg-white p-3 rounded border">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Current Tier: {USER_TIER_LABELS[selectedTier]}
-                  </span>
-                  <span className="text-sm font-bold text-blue-600">
-                    {CREDIT_COSTS[selectedTier]} credit/image
-                  </span>
+          {/* Image Modification Panel */}
+          {modifyState.selectedImageUuid && (
+            <div className="mt-8 p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    🎨 Modify Selected Image
+                  </h3>
                 </div>
-                <p className="text-xs text-gray-600">
-                  {USER_TIER_DESCRIPTIONS[selectedTier]}
-                </p>
+                <button
+                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', error: null }))}
+                  className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-200">
-            {onRegenerate && (
-              <button
-                onClick={onRegenerate}
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-              >
-                Regenerate
-              </button>
-            )}
-            
-            {/* <button
-              onClick={handleCopy}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Copy Prompt
-            </button> */}
-            
-            <button
-              onClick={handleGenerateImage}
-              disabled={generatingImage}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                generatingImage
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-green-500 text-white hover:bg-green-600'
-              }`}
-            >
-              {generatingImage ? 'Generating...' : `Generate Image (${CREDIT_COSTS[selectedTier]} credit)`}
-            </button>
-            
-            <button
-              onClick={handleGenerateMultipleImages}
-              disabled={generatingImage}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                generatingImage
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-orange-500 text-white hover:bg-orange-600'
-              }`}
-            >
-              {generatingImage ? 'Generating...' : `Generate 4 Images (${CREDIT_COSTS[selectedTier] * 4} credits)`}
-            </button>
-          </div>
-
-          {/* Image Error Display */}
-          {imageError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{imageError}</p>
-            </div>
-          )}
-
-          {/* Generated Images */}
-          {generatedImages.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Generated Images</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {generatedImages.map((image, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg overflow-hidden">
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <h4 className="text-lg font-bold text-gray-800">Original Image</h4>
+                  </div>
+                  <div className="relative group">
                     <img
-                      src={image.url}
-                      alt={`Generated meme ${index + 1}`}
-                      className="w-full h-auto"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZjdmNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
-                      }}
+                      src={modifyState.selectedImageUrl || ''}
+                      alt="Selected image"
+                      className="w-full h-auto rounded-xl border-3 border-gray-300 shadow-lg group-hover:shadow-xl transition-all duration-300"
                     />
-                    <div className="p-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Image {index + 1}</span>
-                        <a
-                          href={image.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:text-blue-600 text-sm"
-                        >
-                          Open Full Size
-                        </a>
-                      </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <h4 className="text-lg font-bold text-gray-800">Modification Instructions</h4>
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      value={modifyState.modifyPrompt}
+                      onChange={(e) => setModifyState(prev => ({ ...prev, modifyPrompt: e.target.value }))}
+                      placeholder="Describe how you want to modify this image...\n\nExample:\n• Change the background to a sunset\n• Add sunglasses to the character\n• Make it more colorful"
+                      className="w-full h-40 p-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 resize-none transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                      maxLength={500}
+                    />
+                    <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+                      {modifyState.modifyPrompt.length}/500
                     </div>
                   </div>
-                ))}
+                  
+                  {modifyState.error && (
+                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <p className="text-red-800 font-medium">{modifyState.error}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={handleModifyImage}
+                    disabled={modifyState.isModifying || !modifyState.modifyPrompt.trim()}
+                    className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform ${
+                      modifyState.isModifying
+                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        : !modifyState.modifyPrompt.trim()
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                    }`}
+                  >
+                    {modifyState.isModifying ? (
+                      <div className="flex items-center justify-center space-x-3">
+                        <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Modifying Image...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center space-x-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                        </svg>
+                        <span>Modify Image</span>
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Usage Info */}
-          <div className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-            <p>Generated: {new Date(result.created_at).toLocaleString()}</p>
-            <p>ID: {result.id}</p>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={onRegenerate}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              🔄 Generate New
+            </button>
+            
+            <button
+              onClick={handleCopy}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                copied
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
+            >
+              {copied ? '✅ Copied!' : '📋 Copy Prompt'}
+            </button>
           </div>
-        </div>
-      </div>
 
-      {/* AI Image Generation Tips */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-800 mb-2">🎨 Image Generation</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>Click "Generate Image" to create a single meme image</li>
-          <li>Click "Generate 4 Images" to create multiple variations</li>
-          <li>Or copy the prompt and use with external AI image generators</li>
-          <li>Use the generated images for your meme token launch</li>
-        </ul>
+          {/* Usage Tips */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 className="font-semibold text-yellow-800 mb-2">💡 Usage Tips</h4>
+            <ul className="text-sm text-yellow-700 space-y-1">
+              <li>• Click on any image to select and modify it</li>
+              <li>• Modified images will appear alongside the original</li>
+              <li>• You can continue modifying the modified images</li>
+              <li>• Copy the prompt to use with other AI image generators</li>
+            </ul>
+          </div>
+
+          {/* Metadata */}
+           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 p-6 mt-6">
+             <div className="flex items-center space-x-3 mb-4">
+               <div className="w-8 h-8 bg-gradient-to-r from-gray-500 to-blue-500 rounded-lg flex items-center justify-center">
+                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                   <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                 </svg>
+               </div>
+               <h3 className="text-lg font-bold text-gray-800">Generation Metadata</h3>
+             </div>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
+                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                 <div>
+                   <span className="text-xs font-medium text-gray-600 block">Model</span>
+                   <span className="text-sm font-bold text-gray-800">{result.model_name || 'Unknown'}</span>
+                 </div>
+               </div>
+               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
+                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                 <div>
+                   <span className="text-xs font-medium text-gray-600 block">Credits</span>
+                   <span className="text-sm font-bold text-green-700">{result.credits_consumed}</span>
+                 </div>
+               </div>
+               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
+                 <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                 <div>
+                   <span className="text-xs font-medium text-gray-600 block">Time</span>
+                   <span className="text-sm font-bold text-purple-700">{result.generation_time}s</span>
+                 </div>
+               </div>
+               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
+                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                 <div>
+                   <span className="text-xs font-medium text-gray-600 block">Images</span>
+                   <span className="text-xs font-bold text-orange-700">{result.images.length}</span>
+                 </div>
+               </div>
+             </div>
+           </div>
+        </div>
       </div>
     </div>
   );

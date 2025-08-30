@@ -35,7 +35,7 @@ This will run the app, redis, and postgres in the docker. But the postgres will 
 - **API**：http://localhost:8000
 - **API docs**：http://localhost:8000/docs
 - **Redis dashboard**：http://localhost:8081
-- **Health checker**：http://localhost:8000/health
+- **Health checker**：http://localhost:8000/api/v1/health
 
 ## 📋 API Endpoints
 
@@ -89,7 +89,7 @@ Authorization: Bearer <admin_token>
 
 #### Generate Prompt (Synchronous)
 ```http
-POST /api/v1/generate-prompt
+POST /api/v1/images/generate-prompt
 Authorization: Bearer <token>
 ```
 
@@ -108,29 +108,185 @@ Authorization: Bearer <token>
 
 #### Generate Prompt (Asynchronous)
 ```http
-POST /api/v1/generate-prompt/async
+POST /api/v1/images/generate-prompt/async
 Authorization: Bearer <token>
 ```
 
 #### Get Task Status
 ```http
-GET /api/v1/task/{task_id}
+GET /api/v1/images/task/{task_id}
 ```
 
 #### Parameter Options
 ```http
-GET /api/v1/parameters/options
+GET /api/v1/images/parameters/options
 ```
 
 #### Usage Statistics
 ```http
-GET /api/v1/stats
+GET /api/v1/images/stats
 ```
 
 #### Health Check
 ```http
 GET /api/v1/health
 ```
+
+### Combined Prompt + Image Generation Endpoints
+
+#### Generate Single Image with Prompt (Synchronous)
+```http
+POST /api/v1/images/generate-image
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "user_input": "Pepe on the moon with diamond hands",
+  "user_tier": "free",
+  "shape": "circle",
+  "aspect_ratio": "1:1",
+  "image_format": "png",
+  "style_preference": "cyberpunk neon",
+  "background_preference": "cosmic starfield",
+  "text_option": "no_text",
+  "negative_prompt": "blurry, low quality",
+  "steps": 20,
+  "cfg_scale": 7.0,
+  "seed": 12345
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "generated_prompt": "A cute Pepe frog character on lunar surface with diamond hands, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
+    "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
+    "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "model": "runware:100@1",
+    "model_name": "FLUX.1 schnell",
+    "credits_consumed": 1,
+    "remaining_credits": 9,
+    "generation_time": 3.2,
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  "message": "Image generated successfully"
+}
+```
+
+#### Generate Multiple Images with Prompt (Synchronous)
+```http
+POST /api/v1/images/generate-images
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "user_input": "Doge astronaut exploring Mars",
+  "user_tier": "free",
+  "count": 4,
+  "shape": "square",
+  "aspect_ratio": "1:1",
+  "image_format": "png",
+  "style_preference": "3D rendered",
+  "background_preference": "Mars landscape",
+  "text_option": "minimal_text",
+  "negative_prompt": "blurry, low quality",
+  "steps": 20,
+  "cfg_scale": 7.0
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "generated_prompt": "A cute Doge astronaut character exploring Mars landscape, 3D rendered style, Mars landscape background, square badge design, minimal text integration, transparent background, professional logo design",
+    "images": [
+      {
+        "image_url": "https://runware-images.s3.amazonaws.com/image_1.png",
+        "image_uuid": "550e8400-e29b-41d4-a716-446655440001"
+      },
+      {
+        "image_url": "https://runware-images.s3.amazonaws.com/image_2.png",
+        "image_uuid": "550e8400-e29b-41d4-a716-446655440002"
+      },
+      {
+        "image_url": "https://runware-images.s3.amazonaws.com/image_3.png",
+        "image_uuid": "550e8400-e29b-41d4-a716-446655440003"
+      },
+      {
+        "image_url": "https://runware-images.s3.amazonaws.com/image_4.png",
+        "image_uuid": "550e8400-e29b-41d4-a716-446655440004"
+      }
+    ],
+    "model": "runware:100@1",
+    "model_name": "FLUX.1 schnell",
+    "total_credits_consumed": 4,
+    "remaining_credits": 6,
+    "generation_time": 8.5,
+    "created_at": "2024-01-15T10:35:00Z"
+  },
+  "message": "Multiple images generated successfully"
+}
+```
+
+#### Generate Single Image with Prompt (Asynchronous)
+```http
+POST /api/v1/images/generate-image/async
+Authorization: Bearer <token>
+```
+
+**Request Body:** Same as synchronous single image generation
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "task_id": "task_550e8400-e29b-41d4-a716-446655440000",
+    "status": "pending",
+    "estimated_time": 5
+  },
+  "message": "Image generation task created"
+}
+```
+
+#### Generate Multiple Images with Prompt (Asynchronous)
+```http
+POST /api/v1/images/generate-images/async
+Authorization: Bearer <token>
+```
+
+**Request Body:** Same as synchronous multiple images generation
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "task_id": "task_550e8400-e29b-41d4-a716-446655440001",
+    "status": "pending",
+    "estimated_time": 15
+  },
+  "message": "Multiple images generation task created"
+}
+```
+
+**Parameters for Combined Endpoints:**
+- **`user_input`** (required): User's meme concept input (1-200 characters)
+- **`user_tier`** (optional): User tier for model selection (default: "free")
+- **`count`** (optional, multiple images only): Number of images to generate (1-8, default: 4)
+- **`shape`**, **`aspect_ratio`**, **`image_format`**: Same as generation endpoints
+- **`style_preference`** (optional): Specific style preference (max 100 characters)
+- **`background_preference`** (optional): Background preference (max 100 characters)
+- **`text_option`** (optional): Text inclusion option (default: "no_text")
+- **`negative_prompt`**, **`steps`**, **`cfg_scale`**, **`seed`**: Advanced parameters
 
 ### Image Generation Endpoints
 
@@ -175,6 +331,52 @@ Authorization: Bearer <token>
   "cfg_scale": 7.0
 }
 ```
+
+#### Modify Image (Image-to-Image)
+```http
+POST /api/v1/images/modify
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "prompt": "Transform this image into a cyberpunk style meme character",
+  "seed_image": "https://example.com/image.jpg",
+  "user_tier": "free",
+  "strength": 0.8,
+  "shape": "circle",
+  "aspect_ratio": "1:1",
+  "image_format": "png",
+  "negative_prompt": "blurry, low quality",
+  "steps": 20,
+  "cfg_scale": 7.0,
+  "seed": 12345
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "image_url": "https://runware-images.s3.amazonaws.com/modified_image.png",
+    "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "cost": 1,
+    "model_name": "FLUX.1 schnell",
+    "seed": 12345
+  },
+  "message": "Image modified successfully"
+}
+```
+
+**Parameters:**
+- **`prompt`** (required): Description of how to modify the image
+- **`seed_image`** (required): URL or base64 encoded source image
+- **`user_tier`** (optional): User tier affecting quality and cost (default: "free")
+- **`strength`** (optional): Modification strength 0.1-1.0 (default: 0.8)
+- **`shape`**, **`aspect_ratio`**, **`image_format`**: Same as generation endpoints
+- **`negative_prompt`**, **`steps`**, **`cfg_scale`**, **`seed`**: Advanced parameters
 
 ## 🎨 Parameter Options
 
@@ -439,7 +641,7 @@ curl -X GET "http://localhost:8000/api/v1/auth/quota" \
 
 ### Basic Generation
 ```bash
-curl -X POST "http://localhost:8000/api/v1/generate-prompt" \
+curl -X POST "http://localhost:8000/api/v1/images/generate-prompt" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <your_token>" \
   -d '{
@@ -449,7 +651,7 @@ curl -X POST "http://localhost:8000/api/v1/generate-prompt" \
 
 ### Advanced Generation with Parameters
 ```bash
-curl -X POST "http://localhost:8000/api/v1/generate-prompt" \
+curl -X POST "http://localhost:8000/api/v1/images/generate-prompt" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <your_token>" \
   -d '{
@@ -466,7 +668,7 @@ curl -X POST "http://localhost:8000/api/v1/generate-prompt" \
 ### Asynchronous Generation
 ```bash
 # Start async task
-curl -X POST "http://localhost:8000/api/v1/generate-prompt/async" \
+curl -X POST "http://localhost:8000/api/v1/images/generate-prompt/async" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <your_token>" \
   -d '{
@@ -474,12 +676,12 @@ curl -X POST "http://localhost:8000/api/v1/generate-prompt/async" \
   }'
 
 # Check task status
-curl "http://localhost:8000/api/v1/task/{task_id}"
+curl "http://localhost:8000/api/v1/images/task/{task_id}"
 ```
 
 ### Get Parameter Options
 ```bash
-curl "http://localhost:8000/api/v1/parameters/options"
+curl "http://localhost:8000/api/v1/images/parameters/options"
 ```
 
 ### Image Generation
@@ -580,7 +782,7 @@ The API provides direct image generation through Runware service with support fo
 
 ### Usage Statistics
 ```http
-GET /api/v1/stats
+GET /api/v1/images/stats
 ```
 
 Provides insights into:
@@ -590,17 +792,73 @@ Provides insights into:
 - Top user inputs
 - Parameter popularity analytics
 
-### Health Check
+### Unified Health Check
 ```http
 GET /api/v1/health
 ```
 
-Monitors:
-- Redis connection status
-- Kimi API availability
+**Description:**
+Unified health check endpoint that monitors all system services and provides comprehensive status information.
+
+**Authentication:** Optional (more detailed information provided when authenticated)
+
+**Response Example (Authenticated User):**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-20T10:30:00Z",
+  "version": "1.0.0",
+  "services": {
+    "redis": "healthy",
+    "kimi_api": "healthy",
+    "database": "healthy",
+    "queue_length": 5,
+    "runware": "healthy"
+  },
+  "runware": {
+    "status": "healthy",
+    "connection_time": 0.15,
+    "connected": true,
+    "timestamp": "2024-01-20T10:30:00Z"
+  },
+  "connection_time": 0.25,
+  "connected": true,
+  "error": null
+}
+```
+
+**Response Example (Unauthenticated User):**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-20T10:30:00Z",
+  "version": "1.0.0",
+  "services": {
+    "redis": "healthy",
+    "kimi_api": "healthy",
+    "database": "healthy",
+    "queue_length": 5
+  },
+  "runware": null,
+  "connection_time": 0.25,
+  "connected": true,
+  "error": null
+}
+```
+
+**Monitors:**
+- Redis connection status and queue length
+- Kimi API configuration and availability
 - Database connectivity
-- Queue length
-- System timestamp
+- Runware service status (detailed info for authenticated users)
+- Overall system connectivity
+- Response times and connection performance
+- System timestamp and version
+
+**Status Values:**
+- `healthy`: All services are functioning normally
+- `degraded`: Some non-critical services have issues
+- `unhealthy`: Critical services are failing
 
 ### Redis Management
 Access Redis Commander at `http://localhost:8081` for:

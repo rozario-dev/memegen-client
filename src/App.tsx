@@ -3,12 +3,12 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { MemeGenerationForm } from './components/forms/MemeGenerationForm';
 import { ResultsDisplay } from './components/results/ResultsDisplay';
-import type { PromptResponse } from './types/api';
+import type { DirectImageGenerationResponse } from './types/api';
 
 function App() {
-  const [generatedResult, setGeneratedResult] = useState<PromptResponse | null>(null);
+  const [generatedResult, setGeneratedResult] = useState<DirectImageGenerationResponse | null>(null);
 
-  const handleGenerated = (result: PromptResponse) => {
+  const handleGenerated = (result: DirectImageGenerationResponse) => {
     setGeneratedResult(result);
   };
 

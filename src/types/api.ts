@@ -227,3 +227,87 @@ export interface MultipleImageGenerationResponse {
   total_credits_consumed: number;
   total_generation_time: number;
 }
+
+// 新的直接生成图片接口
+export interface DirectImageGenerationRequest {
+  user_input: string;
+  user_tier?: UserTier;
+  image_count?: number;
+  shape?: ShapeType;
+  aspect_ratio?: AspectRatio;
+  image_format?: ImageFormat;
+  style_preference?: string;
+  background_preference?: string;
+  text_option?: TextOption;
+  negative_prompt?: string;
+  steps?: number;
+  cfg_scale?: number;
+  seed?: number;
+}
+
+export interface DirectMultipleImageGenerationRequest {
+  user_input: string;
+  user_tier?: UserTier;
+  count?: number;
+  shape?: ShapeType;
+  aspect_ratio?: AspectRatio;
+  image_format?: ImageFormat;
+  style_preference?: string;
+  background_preference?: string;
+  text_option?: TextOption;
+  negative_prompt?: string;
+  steps?: number;
+  cfg_scale?: number;
+}
+
+export interface DirectImageGenerationResponse {
+  generated_prompt: string;
+  images: {
+    image_url: string;
+    image_uuid: string;
+    isModified?: boolean;
+  }[];
+  model: string;
+  model_name: string;
+  credits_consumed: number;
+  remaining_credits: number;
+  generation_time: number;
+  created_at: string;
+}
+
+export interface DirectMultipleImageGenerationResponse {
+  generated_prompt: string;
+  images: {
+    image_url: string;
+    image_uuid: string;
+  }[];
+  model: string;
+  model_name: string;
+  total_credits_consumed: number;
+  remaining_credits: number;
+  generation_time: number;
+  created_at: string;
+}
+
+// 图片修改接口
+export interface ImageModifyRequest {
+  prompt: string;
+  seed_image: string;
+  user_tier?: UserTier;
+  strength?: number;
+  shape?: ShapeType;
+  aspect_ratio?: AspectRatio;
+  image_format?: ImageFormat;
+  negative_prompt?: string;
+  steps?: number;
+  cfg_scale?: number;
+  seed?: number;
+}
+
+export interface ImageModifyResponse {
+  image_url: string;
+  image_uuid: string;
+  cost: number;
+  model_name: string;
+  seed: number;
+}
