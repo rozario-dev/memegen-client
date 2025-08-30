@@ -106,6 +106,25 @@ Authorization: Bearer <token>
 }
 ```
 
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_input": "Pepe on the moon",
+  "generated_prompt": "A cute Pepe frog character on lunar surface, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
+  "parameters": {
+    "shape": "circle",
+    "text_option": "no_text",
+    "aspect_ratio": "1:1",
+    "image_format": "png",
+    "style_preference": "cyberpunk neon",
+    "background_preference": "cosmic starfield"
+  },
+  "created_at": "2024-01-15T10:30:00Z",
+  "status": "completed"
+}
+```
+
 #### Generate Prompt (Asynchronous)
 ```http
 POST /api/v1/images/generate-prompt/async
@@ -131,6 +150,46 @@ GET /api/v1/images/stats
 ```http
 GET /api/v1/health
 ```
+
+## 📋 API Response Format
+
+### Unified Response Structure
+
+All image generation APIs (both prompt+image combined and direct image generation) return a consistent response format:
+
+```json
+{
+  "prompt_id": "unique-prompt-identifier",
+  "user_input": "original user input",
+  "generated_prompt": "AI-generated or provided prompt",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image.png",
+      "image_uuid": "unique-image-identifier",
+      "width": 1024,
+      "height": 1024,
+      "seed": 12345,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 3.2,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total_images": 1,
+  "user_tier": "free",
+  "credits_consumed": 1,
+  "remaining_credits": 99
+}
+```
+
+**Key Points:**
+- **Consistent Structure**: All endpoints return the same format for easy frontend integration
+- **Image Array**: Even single image generation returns an array with one item
+- **Per-Image Details**: Each image object contains complete generation metadata
+- **Credit Information**: User tier, consumed credits, and remaining credits at the top level
+- **Timing Data**: Individual generation time per image and total time for multiple images
 
 ### Combined Prompt + Image Generation Endpoints
 
@@ -161,19 +220,28 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "generated_prompt": "A cute Pepe frog character on lunar surface with diamond hands, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
-    "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
-    "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
-    "model": "runware:100@1",
-    "model_name": "FLUX.1 schnell",
-    "credits_consumed": 1,
-    "remaining_credits": 9,
-    "generation_time": 3.2,
-    "created_at": "2024-01-15T10:30:00Z"
-  },
-  "message": "Image generated successfully"
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_input": "Pepe on the moon with diamond hands",
+  "generated_prompt": "A cute Pepe frog character on lunar surface with diamond hands, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "width": 1024,
+      "height": 1024,
+      "seed": 12345,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 3.2,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total_images": 1,
+  "user_tier": "free",
+  "credits_consumed": 1,
+  "remaining_credits": 9
 }
 ```
 
@@ -204,35 +272,67 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "generated_prompt": "A cute Doge astronaut character exploring Mars landscape, 3D rendered style, Mars landscape background, square badge design, minimal text integration, transparent background, professional logo design",
-    "images": [
-      {
-        "image_url": "https://runware-images.s3.amazonaws.com/image_1.png",
-        "image_uuid": "550e8400-e29b-41d4-a716-446655440001"
-      },
-      {
-        "image_url": "https://runware-images.s3.amazonaws.com/image_2.png",
-        "image_uuid": "550e8400-e29b-41d4-a716-446655440002"
-      },
-      {
-        "image_url": "https://runware-images.s3.amazonaws.com/image_3.png",
-        "image_uuid": "550e8400-e29b-41d4-a716-446655440003"
-      },
-      {
-        "image_url": "https://runware-images.s3.amazonaws.com/image_4.png",
-        "image_uuid": "550e8400-e29b-41d4-a716-446655440004"
-      }
-    ],
-    "model": "runware:100@1",
-    "model_name": "FLUX.1 schnell",
-    "total_credits_consumed": 4,
-    "remaining_credits": 6,
-    "generation_time": 8.5,
-    "created_at": "2024-01-15T10:35:00Z"
-  },
-  "message": "Multiple images generated successfully"
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_input": "Doge astronaut exploring Mars",
+  "generated_prompt": "A cute Doge astronaut character exploring Mars landscape, 3D rendered style, Mars landscape background, square badge design, minimal text integration, transparent background, professional logo design",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_1.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440001",
+      "width": 1024,
+      "height": 1024,
+      "seed": 2713998169,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.2,
+      "created_at": "2024-01-15T10:35:00Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_2.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440002",
+      "width": 1024,
+      "height": 1024,
+      "seed": 2060756168,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.5,
+      "created_at": "2024-01-15T10:35:05Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_3.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440003",
+      "width": 1024,
+      "height": 1024,
+      "seed": 1234567890,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.8,
+      "created_at": "2024-01-15T10:35:10Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_4.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440004",
+      "width": 1024,
+      "height": 1024,
+      "seed": 9876543210,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 5.1,
+      "created_at": "2024-01-15T10:35:15Z"
+    }
+  ],
+  "total_images": 4,
+  "user_tier": "free",
+  "credits_consumed": 4,
+  "remaining_credits": 6
 }
 ```
 
@@ -247,13 +347,10 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "task_id": "task_550e8400-e29b-41d4-a716-446655440000",
-    "status": "pending",
-    "estimated_time": 5
-  },
-  "message": "Image generation task created"
+  "task_id": "task_550e8400-e29b-41d4-a716-446655440000",
+  "status": "pending",
+  "message": "Image generation task created",
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -268,13 +365,10 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "task_id": "task_550e8400-e29b-41d4-a716-446655440001",
-    "status": "pending",
-    "estimated_time": 15
-  },
-  "message": "Multiple images generation task created"
+  "task_id": "task_550e8400-e29b-41d4-a716-446655440001",
+  "status": "pending",
+  "message": "Multiple images generation task created",
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -301,6 +395,7 @@ Authorization: Bearer <token>
 {
   "prompt": "A cute Shiba Inu meme character with diamond hands",
   "user_tier": "free",
+  "count": 1,
   "shape": "circle",
   "aspect_ratio": "1:1",
   "image_format": "png",
@@ -308,6 +403,34 @@ Authorization: Bearer <token>
   "steps": 20,
   "cfg_scale": 7.0,
   "seed": 12345
+}
+```
+
+**Response:**
+```json
+{
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_input": "A cute Shiba Inu meme character with diamond hands",
+  "generated_prompt": "A cute Shiba Inu meme character with diamond hands",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "width": 1024,
+      "height": 1024,
+      "seed": 12345,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 3.2,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total_images": 1,
+  "user_tier": "free",
+  "credits_consumed": 1,
+  "remaining_credits": 99
 }
 ```
 
@@ -329,6 +452,73 @@ Authorization: Bearer <token>
   "negative_prompt": "blurry, low quality",
   "steps": 20,
   "cfg_scale": 7.0
+}
+```
+
+**Response:**
+```json
+{
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440001",
+  "user_input": "A cute Shiba Inu meme character with diamond hands",
+  "generated_prompt": "A cute Shiba Inu meme character with diamond hands",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_1.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440001",
+      "width": 1024,
+      "height": 1024,
+      "seed": 2713998169,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.2,
+      "created_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_2.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440002",
+      "width": 1024,
+      "height": 1024,
+      "seed": 2060756168,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.5,
+      "created_at": "2024-01-15T10:30:05Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_3.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440003",
+      "width": 1024,
+      "height": 1024,
+      "seed": 1234567890,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 4.8,
+      "created_at": "2024-01-15T10:30:10Z"
+    },
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/image_4.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440004",
+      "width": 1024,
+      "height": 1024,
+      "seed": 9876543210,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 5.1,
+      "created_at": "2024-01-15T10:30:15Z"
+    }
+  ],
+  "total_images": 4,
+  "user_tier": "free",
+  "credits_consumed": 4,
+  "remaining_credits": 96
 }
 ```
 
@@ -358,15 +548,28 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "image_url": "https://runware-images.s3.amazonaws.com/modified_image.png",
-    "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
-    "cost": 1,
-    "model_name": "FLUX.1 schnell",
-    "seed": 12345
-  },
-  "message": "Image modified successfully"
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_input": "Transform this image into a cyberpunk style meme character",
+  "generated_prompt": "Transform this image into a cyberpunk style meme character",
+  "images": [
+    {
+      "image_url": "https://runware-images.s3.amazonaws.com/modified_image.png",
+      "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "width": 1024,
+      "height": 1024,
+      "seed": 12345,
+      "model": "runware:100@1",
+      "model_name": "FLUX.1 schnell",
+      "steps": 20,
+      "cfg_scale": 7.0,
+      "generation_time": 3.8,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total_images": 1,
+  "user_tier": "free",
+  "credits_consumed": 1,
+  "remaining_credits": 99
 }
 ```
 

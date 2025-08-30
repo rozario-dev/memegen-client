@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
-import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
+import type { DirectImageGenerationResponse, DirectMultipleImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
 
 interface ResultsDisplayProps {
-  result: DirectImageGenerationResponse;
+  result: DirectImageGenerationResponse | DirectMultipleImageGenerationResponse;
   onRegenerate?: () => void;
 }
 
@@ -19,7 +19,23 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   result, 
   onRegenerate 
 }) => {
+  // Debug: 打印 result 对象
+  console.log('=== API 返回值调试信息 ===');
+  console.log('完整的 result 对象:', JSON.stringify(result, null, 2));
+  console.log('result.images 数组:', result.images);
+  console.log('images 数组长度:', result.images?.length || 0);
+  if (result.images && result.images.length > 0) {
+    console.log('第一张图片信息:', result.images[0]);
+  }
+  console.log('result 对象的所有属性:', Object.keys(result));
+  console.log('========================');
+  
   const [copied, setCopied] = useState(false);
+  
+  // Helper function to get credits consumed
+  const getCreditsConsumed = () => {
+    return 'credits_consumed' in result ? result.credits_consumed : 0;
+  };
   const [modifyState, setModifyState] = useState<ModifyState>({
     selectedImageUuid: null,
     selectedImageUrl: null,
@@ -83,16 +99,16 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   };
 
   // Create a unified image structure for display
-  const originalImages = result.images.map(img => ({
-    image_uuid: img.image_uuid,
-    image_url: img.image_url,
+  const originalImages = (result.images || []).map(img => ({
+    ...img,
     isModified: false
   }));
   
   const modifiedImagesList = modifiedImages.map(img => ({
     image_uuid: img.image_uuid,
     image_url: img.image_url,
-    isModified: true
+    isModified: true,
+    model_name: 'Modified Image' // Default for modified images
   }));
   
   const allImages = [...originalImages, ...modifiedImagesList];
@@ -126,7 +142,26 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             </div>
           </div>
 
-
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={onRegenerate}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Generate New
+            </button>
+            
+            <button
+              onClick={handleCopy}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                copied
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
+            >
+              {copied ? '✅ Copied!' : 'Copy Prompt'}
+            </button>
+          </div>
 
           {/* Images Grid */}
           <div>
@@ -165,6 +200,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <div className="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
                         <p className="text-sm font-medium text-gray-800">Click to modify with AI</p>
+                        {imageResult.model_name && (
+                          <p className="text-xs text-gray-600 mt-1">Model: {imageResult.model_name}</p>
+                        )}
                       </div>
                     </div>
                     {/* Download Button */}
@@ -184,6 +222,13 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     {imageResult.isModified && (
                        <div className="absolute top-4 left-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">
                          ✨ Modified
+                       </div>
+                     )}
+                     
+                     {/* Model info badge */}
+                     {imageResult.model_name && (
+                       <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{top: imageResult.isModified ? '60px' : '16px'}}>
+                         {imageResult.model_name}
                        </div>
                      )}
                   </div>
@@ -291,27 +336,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={onRegenerate}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              🔄 Generate New
-            </button>
-            
-            <button
-              onClick={handleCopy}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                copied
-                  ? 'bg-green-500 text-white'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
-            >
-              {copied ? '✅ Copied!' : '📋 Copy Prompt'}
-            </button>
-          </div>
-
           {/* Usage Tips */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h4 className="font-semibold text-yellow-800 mb-2">💡 Usage Tips</h4>
@@ -333,33 +357,33 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                </div>
                <h3 className="text-lg font-bold text-gray-800">Generation Metadata</h3>
              </div>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
+             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+               {/* <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                  <div>
                    <span className="text-xs font-medium text-gray-600 block">Model</span>
-                   <span className="text-sm font-bold text-gray-800">{result.model_name || 'Unknown'}</span>
+                   <span className="text-sm font-bold text-gray-800">{result.images?.[0]?.model_name || 'Unknown'}</span>
                  </div>
-               </div>
+               </div> */}
                <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                  <div>
                    <span className="text-xs font-medium text-gray-600 block">Credits</span>
-                   <span className="text-sm font-bold text-green-700">{result.credits_consumed}</span>
+                   <span className="text-sm font-bold text-green-700">{getCreditsConsumed()}</span>
                  </div>
                </div>
                <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                  <div>
-                   <span className="text-xs font-medium text-gray-600 block">Time</span>
-                   <span className="text-sm font-bold text-purple-700">{result.generation_time}s</span>
+                   <span className="text-xs font-medium text-gray-600 block">Avg Time</span>
+                   <span className="text-sm font-bold text-purple-700">{result.images?.[0]?.generation_time ? `${result.images[0].generation_time.toFixed(1)}s` : 'N/A'}</span>
                  </div>
                </div>
                <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                  <div>
                    <span className="text-xs font-medium text-gray-600 block">Images</span>
-                   <span className="text-xs font-bold text-orange-700">{result.images.length}</span>
+                   <span className="text-xs font-bold text-orange-700">{result.images?.length || 0}</span>
                  </div>
                </div>
              </div>

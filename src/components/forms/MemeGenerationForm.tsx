@@ -4,10 +4,10 @@ import { useParameterOptions } from '../../hooks/useParameterOptions';
 import { apiService } from '../../services/api';
 import { LoginModal } from '../auth/LoginModal';
 import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
-import type { DirectImageGenerationRequest, DirectImageGenerationResponse } from '../../types/api';
+import type { DirectImageGenerationRequest, DirectImageGenerationResponse, DirectMultipleImageGenerationResponse } from '../../types/api';
 
 interface MemeGenerationFormProps {
-  onGenerated?: (result: DirectImageGenerationResponse) => void;
+  onGenerated?: (result: DirectImageGenerationResponse | DirectMultipleImageGenerationResponse) => void;
 }
 
 export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenerated }) => {
@@ -21,7 +21,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   const [formData, setFormData] = useState<DirectImageGenerationRequest>({
     user_input: '',
     user_tier: 'free',
-    image_count: 1,
+    count: 1,
     shape: 'circle',
     text_option: 'no_text',
     aspect_ratio: '1:1',
@@ -42,7 +42,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   }, [selectedTier]);
 
   const handleInputChange = (field: keyof DirectImageGenerationRequest, value: string) => {
-    const processedValue = field === 'image_count' ? parseInt(value, 10) : value;
+    const processedValue = field === 'count' ? parseInt(value, 10) : value;
     setFormData(prev => ({ ...prev, [field]: processedValue }));
   };
 
@@ -56,7 +56,8 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     }
 
     // Check quota for authenticated users
-    const requiredCredits = CREDIT_COSTS[selectedTier];
+    const imageCount = formData.count || 1;
+    const requiredCredits = CREDIT_COSTS[selectedTier] * imageCount;
     if (!quota || quota.remaining_quota < requiredCredits) {
       setShowLoginModal(true);
       return;
@@ -66,7 +67,18 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     setError(null);
 
     try {
-      const response = await apiService.generateImageDirect(formData);
+      let response;
+      if (imageCount === 1) {
+        response = await apiService.generateImageDirect(formData);
+      } else {
+        // Convert to DirectMultipleImageGenerationRequest format
+        const multipleRequest = {
+          ...formData,
+          count: imageCount
+        };
+        response = await apiService.generateMultipleImagesDirect(multipleRequest);
+      }
+      
       if (onGenerated) {
         onGenerated(response);
       }
@@ -141,8 +153,8 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Number of Images</label>
             <select
-              value={formData.image_count}
-              onChange={(e) => handleInputChange('image_count', e.target.value)}
+              value={formData.count}
+              onChange={(e) => handleInputChange('count', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value={1}>1 Image</option>
@@ -379,27 +391,27 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
               ) : (
                 <>
                   <span className="text-2xl mr-3">🎨</span>
-                  <span>Generate Meme Image{formData.image_count && formData.image_count > 1 ? 's' : ''}</span>
+                  <span>Generate Meme Image{formData.count && formData.count > 1 ? 's' : ''}</span>
                   <div className="ml-3 px-3 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
-                    {(CREDIT_COSTS[selectedTier] * (formData.image_count || 1))} credit{(CREDIT_COSTS[selectedTier] * (formData.image_count || 1)) > 1 ? 's' : ''}
+                    {(CREDIT_COSTS[selectedTier] * (formData.count || 1))} credit{(CREDIT_COSTS[selectedTier] * (formData.count || 1)) > 1 ? 's' : ''}
                   </div>
                 </>
               )}
             </div>
             
             {/* Shine effect */}
-            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= (CREDIT_COSTS[selectedTier] * (formData.image_count || 1))) && (
+            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= (CREDIT_COSTS[selectedTier] * (formData.count || 1))) && (
               <div className="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 transform -skew-x-12 group-hover:animate-pulse"></div>
             )}
           </button>
           
           {/* Credit warning */}
-          {quota && quota.remaining_quota < (CREDIT_COSTS[selectedTier] * (formData.image_count || 1)) && (
+          {quota && quota.remaining_quota < (CREDIT_COSTS[selectedTier] * (formData.count || 1)) && (
             <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center">
                 <span className="text-red-500 mr-2">⚠️</span>
                 <span className="text-sm text-red-700">
-                  Insufficient credits. You need {CREDIT_COSTS[selectedTier] * (formData.image_count || 1)} credits but only have {quota.remaining_quota}.
+                  Insufficient credits. You need {CREDIT_COSTS[selectedTier] * (formData.count || 1)} credits but only have {quota.remaining_quota}.
                 </span>
               </div>
             </div>

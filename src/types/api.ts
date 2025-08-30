@@ -232,7 +232,7 @@ export interface MultipleImageGenerationResponse {
 export interface DirectImageGenerationRequest {
   user_input: string;
   user_tier?: UserTier;
-  image_count?: number;
+  count?: number;
   shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
@@ -261,32 +261,50 @@ export interface DirectMultipleImageGenerationRequest {
 }
 
 export interface DirectImageGenerationResponse {
+  prompt_id: string;
+  user_input: string;
   generated_prompt: string;
   images: {
     image_url: string;
     image_uuid: string;
+    width: number;
+    height: number;
+    seed: number;
+    model: string;
+    model_name: string;
+    steps: number;
+    cfg_scale: number;
+    generation_time: number;
+    created_at: string;
     isModified?: boolean;
   }[];
-  model: string;
-  model_name: string;
+  total_images: number;
+  user_tier: string;
   credits_consumed: number;
   remaining_credits: number;
-  generation_time: number;
-  created_at: string;
 }
 
 export interface DirectMultipleImageGenerationResponse {
+  prompt_id: string;
+  user_input: string;
   generated_prompt: string;
   images: {
     image_url: string;
     image_uuid: string;
+    width: number;
+    height: number;
+    seed: number;
+    model: string;
+    model_name: string;
+    steps: number;
+    cfg_scale: number;
+    generation_time: number;
+    created_at: string;
   }[];
-  model: string;
-  model_name: string;
-  total_credits_consumed: number;
+  total_images: number;
+  user_tier: string;
+  credits_consumed: number;
   remaining_credits: number;
-  generation_time: number;
-  created_at: string;
 }
 
 // 图片修改接口
