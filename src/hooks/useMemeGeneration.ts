@@ -76,8 +76,8 @@ export const useMemeGeneration = () => {
             user_input: '', // Will be set from form
             generated_prompt: status.result || '',
             parameters: {
-            shape: '',
-            text_option: '',
+            // shape: '',
+            // text_option: '',
             aspect_ratio: '',
             image_format: ''
           },

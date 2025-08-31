@@ -1,7 +1,7 @@
 export interface PromptRequest {
   user_input: string;
-  shape: ShapeType;
-  text_option: TextOption;
+  // shape: ShapeType;
+  // text_option: TextOption;
   aspect_ratio: AspectRatio;
   image_format: ImageFormat;
   style_preference?: string;
@@ -13,8 +13,8 @@ export interface PromptResponse {
   user_input: string;
   generated_prompt: string;
   parameters: {
-    shape: string;
-    text_option: string;
+    // shape: string;
+    // text_option: string;
     aspect_ratio: string;
     image_format: string;
     style_preference?: string;
@@ -34,13 +34,13 @@ export interface TaskStatus {
 }
 
 export interface ParameterOptions {
-  shapes: string[];
-  text_options: string[];
+  // shapes: string[];
+  // text_options: string[];
   aspect_ratios: string[];
   image_formats: string[];
   descriptions: {
-    shapes: Record<string, string>;
-    text_options: Record<string, string>;
+    // shapes: Record<string, string>;
+    // text_options: Record<string, string>;
     aspect_ratios: Record<string, string>;
     image_formats: Record<string, string>;
   };
@@ -91,24 +91,24 @@ export interface HealthCheck {
   services: Record<string, string | number>;
 }
 
-export const ShapeType = {
-  CIRCLE: 'circle',
-  SQUARE: 'square',
-  RECTANGLE: 'rectangle',
-  HEXAGON: 'hexagon',
-  DIAMOND: 'diamond',
-  CUSTOM: 'custom'
-} as const;
+// export const ShapeType = {
+//   CIRCLE: 'circle',
+//   SQUARE: 'square',
+//   RECTANGLE: 'rectangle',
+//   HEXAGON: 'hexagon',
+//   DIAMOND: 'diamond',
+//   CUSTOM: 'custom'
+// } as const;
 
-export type ShapeType = typeof ShapeType[keyof typeof ShapeType];
+// export type ShapeType = typeof ShapeType[keyof typeof ShapeType];
 
-export const TextOption = {
-  NO_TEXT: 'no_text',
-  WITH_TEXT: 'with_text',
-  MINIMAL_TEXT: 'minimal_text'
-} as const;
+// export const TextOption = {
+//   NO_TEXT: 'no_text',
+//   WITH_TEXT: 'with_text',
+//   MINIMAL_TEXT: 'minimal_text'
+// } as const;
 
-export type TextOption = typeof TextOption[keyof typeof TextOption];
+// export type TextOption = typeof TextOption[keyof typeof TextOption];
 
 export const AspectRatio = {
   SQUARE: '1:1',
@@ -150,7 +150,7 @@ export type UserTier = typeof UserTier[keyof typeof UserTier];
 export interface ImageGenerationRequest {
   prompt: string;
   user_tier?: UserTier;
-  shape?: ShapeType;
+  // shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   negative_prompt?: string;
@@ -163,7 +163,7 @@ export interface MultipleImageGenerationRequest {
   prompt: string;
   user_tier?: UserTier;
   count?: number;
-  shape?: ShapeType;
+  // shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   negative_prompt?: string;
@@ -197,7 +197,7 @@ export interface ImageGenerationResponse {
   seed: number;
   generation_time: number;
   created_at: string;
-  shape: string;
+  // shape: string;
   aspect_ratio: string;
   image_format: string;
 }
@@ -220,7 +220,7 @@ export interface MultipleImageGenerationResponse {
     seed: number;
     generation_time: number;
     created_at: string;
-    shape: string;
+    // shape: string;
     aspect_ratio: string;
     image_format: string;
   }[];
@@ -233,12 +233,12 @@ export interface DirectImageGenerationRequest {
   user_input: string;
   user_tier?: UserTier;
   count?: number;
-  shape?: ShapeType;
+  // shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   style_preference?: string;
   background_preference?: string;
-  text_option?: TextOption;
+  // text_option?: TextOption;
   negative_prompt?: string;
   steps?: number;
   cfg_scale?: number;
@@ -249,12 +249,12 @@ export interface DirectMultipleImageGenerationRequest {
   user_input: string;
   user_tier?: UserTier;
   count?: number;
-  shape?: ShapeType;
+  // shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   style_preference?: string;
   background_preference?: string;
-  text_option?: TextOption;
+  // text_option?: TextOption;
   negative_prompt?: string;
   steps?: number;
   cfg_scale?: number;
@@ -313,7 +313,7 @@ export interface ImageModifyRequest {
   seed_image: string;
   user_tier?: UserTier;
   strength?: number;
-  shape?: ShapeType;
+  // shape?: ShapeType;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   negative_prompt?: string;

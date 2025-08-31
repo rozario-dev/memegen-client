@@ -22,8 +22,8 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     user_input: '',
     user_tier: 'free',
     count: 1,
-    shape: 'circle',
-    text_option: 'no_text',
+    // shape: 'circle',
+    // text_option: 'no_text',
     aspect_ratio: '1:1',
     image_format: 'png',
     style_preference: '',
@@ -165,7 +165,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
 
           {/* Shape */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Shape</label>
             <select
               value={formData.shape}
@@ -178,10 +178,10 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* Text Option */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Text</label>
             <select
               value={formData.text_option}
@@ -194,7 +194,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* Aspect Ratio */}
           <div>

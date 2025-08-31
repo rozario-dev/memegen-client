@@ -142,23 +142,23 @@ class ApiService {
       // Fallback to mock data when backend is not available
       console.warn('Backend API not available, using mock parameter options');
       return {
-        shapes: ['circle', 'square', 'rectangle', 'hexagon', 'diamond'],
-        text_options: ['no_text', 'with_text', 'minimal_text'],
+        // shapes: ['circle', 'square', 'rectangle', 'hexagon', 'diamond'],
+        // text_options: ['no_text', 'with_text', 'minimal_text'],
         aspect_ratios: ['1:1', '16:9', '4:3', '3:2', '2:3', '3:4', '9:16'],
         image_formats: ['png', 'jpg', 'webp'],
         descriptions: {
-          shapes: {
-            circle: 'Circular logo format, perfect for social media profiles',
-            square: 'Square format, ideal for most social platforms',
-            rectangle: 'Rectangular format for banners and headers',
-            hexagon: 'Hexagonal shape for unique geometric designs',
-            diamond: 'Diamond shape for premium and luxury feel'
-          },
-          text_options: {
-            no_text: 'Pure visual design without any text elements',
-            with_text: 'Include text elements in the design',
-            minimal_text: 'Subtle text integration with focus on visuals'
-          },
+          // shapes: {
+          //   circle: 'Circular logo format, perfect for social media profiles',
+          //   square: 'Square format, ideal for most social platforms',
+          //   rectangle: 'Rectangular format for banners and headers',
+          //   hexagon: 'Hexagonal shape for unique geometric designs',
+          //   diamond: 'Diamond shape for premium and luxury feel'
+          // },
+          // text_options: {
+          //   no_text: 'Pure visual design without any text elements',
+          //   with_text: 'Include text elements in the design',
+          //   minimal_text: 'Subtle text integration with focus on visuals'
+          // },
           aspect_ratios: {
             '1:1': 'Square format - perfect for Instagram posts and profile pictures',
             '16:9': 'Widescreen format - ideal for YouTube thumbnails and banners',

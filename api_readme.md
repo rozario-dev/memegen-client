@@ -97,8 +97,6 @@ Authorization: Bearer <token>
 ```json
 {
   "user_input": "Pepe on the moon",
-  "shape": "circle",
-  "text_option": "no_text",
   "aspect_ratio": "1:1",
   "image_format": "png",
   "style_preference": "cyberpunk neon",
@@ -113,8 +111,6 @@ Authorization: Bearer <token>
   "user_input": "Pepe on the moon",
   "generated_prompt": "A cute Pepe frog character on lunar surface, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
   "parameters": {
-    "shape": "circle",
-    "text_option": "no_text",
     "aspect_ratio": "1:1",
     "image_format": "png",
     "style_preference": "cyberpunk neon",
@@ -204,7 +200,6 @@ Authorization: Bearer <token>
 {
   "user_input": "Pepe on the moon with diamond hands",
   "user_tier": "free",
-  "shape": "circle",
   "aspect_ratio": "1:1",
   "image_format": "png",
   "style_preference": "cyberpunk neon",
@@ -257,7 +252,6 @@ Authorization: Bearer <token>
   "user_input": "Doge astronaut exploring Mars",
   "user_tier": "free",
   "count": 4,
-  "shape": "square",
   "aspect_ratio": "1:1",
   "image_format": "png",
   "style_preference": "3D rendered",
