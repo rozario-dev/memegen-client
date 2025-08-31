@@ -84,10 +84,10 @@ export const History: React.FC = () => {
             </p>
           )}
           <div className="flex gap-4 text-sm text-gray-600">
-            <span>Model: {record.user_tier}</span>
-            <span>Format: {record.image_format}</span>
-            <span>Image Ratio: {record.aspect_ratio}</span>
-            {record.generation_time && <span>Generation Time: {record.generation_time.toFixed(2)}s</span>}
+            <span><strong>Model:</strong> {record.user_tier}</span>
+            <span><strong>Format:</strong> {record.image_format}</span>
+            <span><strong>Image Ratio:</strong> {record.aspect_ratio}</span>
+            {record.generation_time && <span><strong>Generation Time:</strong> {record.generation_time.toFixed(2)}s</span>}
           </div>
         </div>
 

@@ -5,6 +5,7 @@ import { apiService } from '../../services/api';
 import { LoginModal } from '../auth/LoginModal';
 import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../types/api';
+import { ModelSelector } from './ModelSelector';
 
 interface MemeGenerationFormProps {
   onGenerated?: (result: DirectImageGenerationResponse) => void;
@@ -219,90 +220,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         </div>
 
         {/* Model Selection */}
-        <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-6 rounded-xl border border-indigo-200 shadow-sm">
-          <div className="flex items-center mb-6">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-              <span className="text-white text-lg">🎯</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-800">Choose Your AI Model</h3>
-              <p className="text-sm text-gray-600">Select the quality tier that fits your needs</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(USER_TIER_LABELS).map(([tier, label]) => {
-              const tierKey = tier as UserTierType;
-              const cost = CREDIT_COSTS[tierKey];
-              const description = USER_TIER_DESCRIPTIONS[tierKey];
-              const isSelected = selectedTier === tier;
-              const tierColors = {
-                free: 'from-green-400 to-green-600',
-                dev: 'from-blue-400 to-blue-600', 
-                pro: 'from-purple-400 to-purple-600',
-                max: 'from-orange-400 to-red-600'
-              };
-              
-              return (
-                <label key={tier} className={`relative cursor-pointer group transform transition-all duration-200 hover:scale-105 ${
-                  isSelected ? 'scale-105' : ''
-                }`}>
-                  <input
-                    type="radio"
-                    name="userTier"
-                    value={tier}
-                    checked={isSelected}
-                    onChange={(e) => setSelectedTier(e.target.value as UserTierType)}
-                    className="sr-only"
-                  />
-                  <div className={`relative p-5 rounded-xl border-2 transition-all duration-200 overflow-hidden ${
-                    isSelected
-                      ? 'border-transparent bg-white shadow-lg ring-2 ring-blue-500 ring-opacity-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
-                  }`}>
-                    {/* Gradient background for selected */}
-                    {isSelected && (
-                      <div className={`absolute inset-0 bg-gradient-to-r ${tierColors[tierKey]} opacity-5`}></div>
-                    )}
-                    
-                    {/* Content */}
-                    <div className="relative text-center">
-                      <div className={`w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-r ${tierColors[tierKey]} flex items-center justify-center`}>
-                        <span className="text-white font-bold text-lg">
-                          {tier === 'free' ? '🆓' : tier === 'dev' ? '⚡' : tier === 'pro' ? '💎' : '🚀'}
-                        </span>
-                      </div>
-                      
-                      <h4 className="font-bold text-lg text-gray-800 mb-1">
-                        {label}
-                      </h4>
-                      
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mb-3 ${
-                        isSelected ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        <span className="mr-1">💳</span>
-                        {cost} credit{cost > 1 ? 's' : ''}
-                      </div>
-                      
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        {description}
-                      </p>
-                    </div>
-                    
-                    {/* Selection indicator */}
-                    {isSelected && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        </div>
+        <ModelSelector selectedTier={selectedTier} setSelectedTier={setSelectedTier} />
 
         {/* Submit Button */}
         <div className="relative">

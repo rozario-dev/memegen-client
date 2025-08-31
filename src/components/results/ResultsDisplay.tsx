@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { apiService } from '../../services/api';
 import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
+import { ModelSelector } from '../forms/ModelSelector';
 
 interface ResultsDisplayProps {
   result: DirectImageGenerationResponse;
@@ -294,50 +295,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </div>
                   
                   {/* Tier Selection for Modification */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-gray-700 flex items-center">
-                      <span className="mr-2">🎯</span>
-                      Choose Modification Model
-                    </h4>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                      {Object.entries(USER_TIER_LABELS).map(([tier, label]) => {
-                        const tierKey = tier as UserTierType;
-                        const cost = CREDIT_COSTS[tierKey];
-                        const isSelected = modifyState.selectedTier === tier;
-                        const tierIcons = {
-                          free: '🆓',
-                          dev: '⚡', 
-                          pro: '💎',
-                          max: '🚀'
-                        };
-                        
-                        return (
-                          <label key={tier} className="cursor-pointer">
-                            <input
-                              type="radio"
-                              name="modifyTier"
-                              value={tier}
-                              checked={isSelected}
-                              onChange={(e) => setModifyState(prev => ({ ...prev, selectedTier: e.target.value as UserTierType }))}
-                              className="sr-only"
-                            />
-                            <div className={`p-3 rounded-lg border-2 transition-all duration-200 text-center ${
-                              isSelected
-                                ? 'border-blue-500 bg-blue-50 shadow-sm'
-                                : 'border-gray-200 bg-white hover:border-gray-300'
-                            }`}>
-                              <div className="text-lg mb-1">{tierIcons[tierKey]}</div>
-                              <div className="text-sm font-medium text-gray-800">{label}</div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {cost} credit{cost > 1 ? 's' : ''}
-                              </div>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <ModelSelector selectedTier={modifyState.selectedTier} setSelectedTier={(tier) => setModifyState(prev => ({ ...prev, selectedTier: tier }))} />
                   
                   {modifyState.error && (
                     <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
