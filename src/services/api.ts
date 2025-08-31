@@ -10,16 +10,10 @@ import type {
   UsageStats,
   HealthCheck,
   ApiError,
-  ImageGenerationRequest,
-  MultipleImageGenerationRequest,
-  ImageGenerationResponse,
-  MultipleImageGenerationResponse,
-  DirectImageGenerationRequest,
   DirectMultipleImageGenerationRequest,
-  DirectImageGenerationResponse,
-  DirectMultipleImageGenerationResponse,
   ImageModifyRequest,
-  ImageModifyResponse
+  ImageModifyResponse,
+  DirectImageGenerationResponse
 } from '../types/api';
 
 class ApiService {
@@ -147,18 +141,6 @@ class ApiService {
         aspect_ratios: ['1:1', '16:9', '4:3', '3:2', '2:3', '3:4', '9:16'],
         image_formats: ['png', 'jpg', 'webp'],
         descriptions: {
-          // shapes: {
-          //   circle: 'Circular logo format, perfect for social media profiles',
-          //   square: 'Square format, ideal for most social platforms',
-          //   rectangle: 'Rectangular format for banners and headers',
-          //   hexagon: 'Hexagonal shape for unique geometric designs',
-          //   diamond: 'Diamond shape for premium and luxury feel'
-          // },
-          // text_options: {
-          //   no_text: 'Pure visual design without any text elements',
-          //   with_text: 'Include text elements in the design',
-          //   minimal_text: 'Subtle text integration with focus on visuals'
-          // },
           aspect_ratios: {
             '1:1': 'Square format - perfect for Instagram posts and profile pictures',
             '16:9': 'Widescreen format - ideal for YouTube thumbnails and banners',
@@ -208,39 +190,7 @@ class ApiService {
     return response.data;
   }
 
-  // Image Generation endpoints
-  async generateImage(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
-    console.log('API: Sending image generation request to /images/generate:', request);
-    try {
-      const response = await this.api.post<ImageGenerationResponse>('/images/generate', request);
-      console.log('API: Received image generation response:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('API: Image generation request failed:', error);
-      throw error;
-    }
-  }
-
-  async generateMultipleImages(request: MultipleImageGenerationRequest): Promise<MultipleImageGenerationResponse> {
-    const response = await this.api.post<MultipleImageGenerationResponse>('/images/generate-multiple', request);
-    return response.data;
-  }
-
-  // 新的直接生成图片方法
-  async generateImageDirect(request: DirectImageGenerationRequest): Promise<DirectImageGenerationResponse> {
-    console.log('发送直接图片生成请求:', request);
-    try {
-      const response = await this.api.post('/images/generate-image', request);
-      console.log('收到直接图片生成响应:', response.data);
-      return response.data.data || response.data;
-    } catch (error) {
-      console.error('直接图片生成失败:', error);
-      throw error;
-    }
-  }
-
-  async generateMultipleImagesDirect(request: DirectMultipleImageGenerationRequest): Promise<DirectMultipleImageGenerationResponse> {
-    console.log('发送直接多图片生成请求:', request);
+  async generateMultipleImagesDirect(request: DirectMultipleImageGenerationRequest): Promise<DirectImageGenerationResponse> {
     try {
       const response = await this.api.post('/images/generate-images', request);
       console.log('收到直接多图片生成响应:', response.data);

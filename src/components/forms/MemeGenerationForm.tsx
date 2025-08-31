@@ -4,10 +4,10 @@ import { useParameterOptions } from '../../hooks/useParameterOptions';
 import { apiService } from '../../services/api';
 import { LoginModal } from '../auth/LoginModal';
 import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
-import type { DirectImageGenerationRequest, DirectImageGenerationResponse, DirectMultipleImageGenerationResponse } from '../../types/api';
+import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../types/api';
 
 interface MemeGenerationFormProps {
-  onGenerated?: (result: DirectImageGenerationResponse | DirectMultipleImageGenerationResponse) => void;
+  onGenerated?: (result: DirectImageGenerationResponse) => void;
 }
 
 export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenerated }) => {
@@ -18,12 +18,10 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   const [error, setError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState<UserTierType>('free');
 
-  const [formData, setFormData] = useState<DirectImageGenerationRequest>({
+  const [formData, setFormData] = useState<DirectMultipleImageGenerationRequest>({
     user_input: '',
     user_tier: 'free',
     count: 1,
-    // shape: 'circle',
-    // text_option: 'no_text',
     aspect_ratio: '1:1',
     image_format: 'png',
     style_preference: '',
@@ -41,7 +39,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     setFormData(prev => ({ ...prev, user_tier: selectedTier }));
   }, [selectedTier]);
 
-  const handleInputChange = (field: keyof DirectImageGenerationRequest, value: string) => {
+  const handleInputChange = (field: keyof DirectMultipleImageGenerationRequest, value: string) => {
     const processedValue = field === 'count' ? parseInt(value, 10) : value;
     setFormData(prev => ({ ...prev, [field]: processedValue }));
   };
@@ -67,17 +65,11 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     setError(null);
 
     try {
-      let response;
-      if (imageCount === 1) {
-        response = await apiService.generateImageDirect(formData);
-      } else {
-        // Convert to DirectMultipleImageGenerationRequest format
-        const multipleRequest = {
-          ...formData,
-          count: imageCount
-        };
-        response = await apiService.generateMultipleImagesDirect(multipleRequest);
-      }
+      const multipleRequest = {
+        ...formData,
+        count: imageCount
+      };
+      const response = await apiService.generateMultipleImagesDirect(multipleRequest);
       
       if (onGenerated) {
         onGenerated(response);
@@ -163,38 +155,6 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
               <option value={4}>4 Images</option>
             </select>
           </div>
-
-          {/* Shape */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Shape</label>
-            <select
-              value={formData.shape}
-              onChange={(e) => handleInputChange('shape', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              {options.shapes.map(shape => (
-                <option key={shape} value={shape}>
-                  {shape.charAt(0).toUpperCase() + shape.slice(1)} - {options.descriptions.shapes[shape]}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          {/* Text Option */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Text</label>
-            <select
-              value={formData.text_option}
-              onChange={(e) => handleInputChange('text_option', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              {options.text_options.map(option => (
-                <option key={option} value={option}>
-                  {option.replace('_', ' ').charAt(0).toUpperCase() + option.slice(1).replace('_', ' ')} - {options.descriptions.text_options[option]}
-                </option>
-              ))}
-            </select>
-          </div> */}
 
           {/* Aspect Ratio */}
           <div>

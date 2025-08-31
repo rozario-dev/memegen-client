@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
-import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
-import type { DirectImageGenerationResponse, DirectMultipleImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
+import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from '../../config/config';
+import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
 
 interface ResultsDisplayProps {
-  result: DirectImageGenerationResponse | DirectMultipleImageGenerationResponse;
+  result: DirectImageGenerationResponse;
   onRegenerate?: () => void;
 }
 
@@ -24,12 +24,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   // Debug: 打印 result 对象
   console.log('=== API 返回值调试信息 ===');
   console.log('完整的 result 对象:', JSON.stringify(result, null, 2));
-  console.log('result.images 数组:', result.images);
-  console.log('images 数组长度:', result.images?.length || 0);
-  if (result.images && result.images.length > 0) {
-    console.log('第一张图片信息:', result.images[0]);
-  }
-  console.log('result 对象的所有属性:', Object.keys(result));
   console.log('========================');
   
   const [copied, setCopied] = useState(false);
