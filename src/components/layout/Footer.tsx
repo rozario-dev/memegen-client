@@ -63,10 +63,10 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
           {/* Policy Links */}
           <div className="flex space-x-6">
-            <a href="#privacy" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            <a href="/privacy" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
               Privacy Policy
             </a>
-            <a href="#terms" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            <a href="/terms" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
               Terms of Service
             </a>
           </div>
