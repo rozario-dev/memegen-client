@@ -536,7 +536,7 @@ Authorization: Bearer <token>
 
 ##### Advanced Parameters
 - **`negative_prompt`** (string): Negative prompt to avoid certain content
-  - Length: Maximum 500 characters
+  - Length: Maximum 1000 characters
   - Default: `null`
 
 - **`steps`** (integer): Generation steps affecting detail and time
