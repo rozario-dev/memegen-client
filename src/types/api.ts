@@ -138,20 +138,7 @@ export interface DirectImageGenerationResponse {
   prompt_id: string;
   user_input: string;
   generated_prompt: string;
-  images: {
-    image_url: string;
-    image_uuid: string;
-    width: number;
-    height: number;
-    seed: number;
-    model: string;
-    model_name: string;
-    steps: number;
-    cfg_scale: number;
-    generation_time: number;
-    created_at: string;
-    isModified?: boolean;
-  }[];
+  images: ImageItem[];
   total_images: number;
   user_tier: string;
   credits_consumed: number;
@@ -178,4 +165,46 @@ export interface ImageModifyResponse {
   cost: number;
   model_name: string;
   seed: number;
+}
+
+// 图片历史记录相关类型
+export interface ImageItem {
+  seed: number;
+  model: string;
+  steps: number;
+  width: number;
+  height: number;
+  cfg_scale: number;
+  image_url: string;
+  created_at: string;
+  image_uuid: string;
+  model_name: string;
+  generation_time: number;
+}
+
+export interface HistoryRecord {
+  id: string;
+  request_id: string;
+  operation_type: string;
+  prompt: string;
+  negative_prompt: string | null;
+  user_tier: string;
+  aspect_ratio: string;
+  image_format: string;
+  strength: number | null;
+  seed_image: string | null;
+  count: number;
+  credits_consumed: number;
+  remaining_credits: number;
+  generation_time: number;
+  status: string;
+  error_message: string | null;
+  images: ImageItem[];
+  created_at: string;
+}
+
+export interface ImageHistoryResponse {
+  user_id: string;
+  total_count: number;
+  history: HistoryRecord[];
 }

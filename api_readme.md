@@ -189,60 +189,9 @@ All image generation APIs (both prompt+image combined and direct image generatio
 
 ### Combined Prompt + Image Generation Endpoints
 
-#### Generate Single Image with Prompt (Synchronous)
-```http
-POST /api/v1/images/generate-image
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "user_input": "Pepe on the moon with diamond hands",
-  "user_tier": "free",
-  "aspect_ratio": "1:1",
-  "image_format": "png",
-  "style_preference": "cyberpunk neon",
-  "background_preference": "cosmic starfield",
-  "text_option": "no_text",
-  "negative_prompt": "blurry, low quality",
-  "steps": 20,
-  "cfg_scale": 7.0,
-  "seed": 12345
-}
-```
-
-**Response:**
-```json
-{
-  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
-  "user_input": "Pepe on the moon with diamond hands",
-  "generated_prompt": "A cute Pepe frog character on lunar surface with diamond hands, cyberpunk neon style, cosmic starfield background, circular logo format, no text, transparent background, professional logo design",
-  "images": [
-    {
-      "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
-      "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "width": 1024,
-      "height": 1024,
-      "seed": 12345,
-      "model": "runware:100@1",
-      "model_name": "FLUX.1 schnell",
-      "steps": 20,
-      "cfg_scale": 7.0,
-      "generation_time": 3.2,
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "total_images": 1,
-  "user_tier": "free",
-  "credits_consumed": 1,
-  "remaining_credits": 9
-}
-```
-
 #### Generate Multiple Images with Prompt (Synchronous)
 ```http
-POST /api/v1/images/generate-images
+POST /api/v1/images/generate-combined-images
 Authorization: Bearer <token>
 ```
 
@@ -256,7 +205,6 @@ Authorization: Bearer <token>
   "image_format": "png",
   "style_preference": "3D rendered",
   "background_preference": "Mars landscape",
-  "text_option": "minimal_text",
   "negative_prompt": "blurry, low quality",
   "steps": 20,
   "cfg_scale": 7.0
@@ -330,27 +278,9 @@ Authorization: Bearer <token>
 }
 ```
 
-#### Generate Single Image with Prompt (Asynchronous)
-```http
-POST /api/v1/images/generate-image/async
-Authorization: Bearer <token>
-```
-
-**Request Body:** Same as synchronous single image generation
-
-**Response:**
-```json
-{
-  "task_id": "task_550e8400-e29b-41d4-a716-446655440000",
-  "status": "pending",
-  "message": "Image generation task created",
-  "created_at": "2024-01-15T10:30:00Z"
-}
-```
-
 #### Generate Multiple Images with Prompt (Asynchronous)
 ```http
-POST /api/v1/images/generate-images/async
+POST /api/v1/images/generate-combined-images/async
 Authorization: Bearer <token>
 ```
 
@@ -370,67 +300,15 @@ Authorization: Bearer <token>
 - **`user_input`** (required): User's meme concept input (1-200 characters)
 - **`user_tier`** (optional): User tier for model selection (default: "free")
 - **`count`** (optional, multiple images only): Number of images to generate (1-8, default: 4)
-- **`shape`**, **`aspect_ratio`**, **`image_format`**: Same as generation endpoints
 - **`style_preference`** (optional): Specific style preference (max 100 characters)
 - **`background_preference`** (optional): Background preference (max 100 characters)
-- **`text_option`** (optional): Text inclusion option (default: "no_text")
 - **`negative_prompt`**, **`steps`**, **`cfg_scale`**, **`seed`**: Advanced parameters
 
 ### Image Generation Endpoints
 
-#### Generate Single Image
-```http
-POST /api/v1/images/generate
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "prompt": "A cute Shiba Inu meme character with diamond hands",
-  "user_tier": "free",
-  "count": 1,
-  "shape": "circle",
-  "aspect_ratio": "1:1",
-  "image_format": "png",
-  "negative_prompt": "blurry, low quality",
-  "steps": 20,
-  "cfg_scale": 7.0,
-  "seed": 12345
-}
-```
-
-**Response:**
-```json
-{
-  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
-  "user_input": "A cute Shiba Inu meme character with diamond hands",
-  "generated_prompt": "A cute Shiba Inu meme character with diamond hands",
-  "images": [
-    {
-      "image_url": "https://runware-images.s3.amazonaws.com/generated_image.png",
-      "image_uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "width": 1024,
-      "height": 1024,
-      "seed": 12345,
-      "model": "runware:100@1",
-      "model_name": "FLUX.1 schnell",
-      "steps": 20,
-      "cfg_scale": 7.0,
-      "generation_time": 3.2,
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "total_images": 1,
-  "user_tier": "free",
-  "credits_consumed": 1,
-  "remaining_credits": 99
-}
-```
-
 #### Generate Multiple Images
 ```http
-POST /api/v1/images/generate-multiple
+POST /api/v1/images/generate-images-from-prompt
 Authorization: Bearer <token>
 ```
 
@@ -440,7 +318,6 @@ Authorization: Bearer <token>
   "prompt": "A cute Shiba Inu meme character with diamond hands",
   "user_tier": "free",
   "count": 4,
-  "shape": "circle",
   "aspect_ratio": "1:1",
   "image_format": "png",
   "negative_prompt": "blurry, low quality",
@@ -529,7 +406,6 @@ Authorization: Bearer <token>
   "seed_image": "https://example.com/image.jpg",
   "user_tier": "free",
   "strength": 0.8,
-  "shape": "circle",
   "aspect_ratio": "1:1",
   "image_format": "png",
   "negative_prompt": "blurry, low quality",
@@ -572,7 +448,6 @@ Authorization: Bearer <token>
 - **`seed_image`** (required): URL or base64 encoded source image
 - **`user_tier`** (optional): User tier affecting quality and cost (default: "free")
 - **`strength`** (optional): Modification strength 0.1-1.0 (default: 0.8)
-- **`shape`**, **`aspect_ratio`**, **`image_format`**: Same as generation endpoints
 - **`negative_prompt`**, **`steps`**, **`cfg_scale`**, **`seed`**: Advanced parameters
 
 ## 🎨 Parameter Options
@@ -585,27 +460,6 @@ Authorization: Bearer <token>
   - Description: The main concept or idea for the meme
 
 #### Optional Parameters
-
-##### Shape Type
-- **`shape`** (string): Logo shape type
-  - Options: `"circle"`, `"square"`, `"rectangle"`, `"hexagon"`, `"diamond"`, `"custom"`
-  - Default: `"circle"`
-  - Descriptions:
-    - `circle` - Circular logo format, perfect for tokens
-    - `square` - Square badge design, versatile format
-    - `rectangle` - Rectangular banner style, good for headers
-    - `hexagon` - Hexagonal emblem, modern tech feel
-    - `diamond` - Diamond shaped logo, premium look
-    - `custom` - Organic shape design, creative freedom
-
-##### Text Options
-- **`text_option`** (string): Text inclusion option
-  - Options: `"no_text"`, `"with_text"`, `"minimal_text"`
-  - Default: `"no_text"`
-  - Descriptions:
-    - `no_text` - Symbol only, no text elements
-    - `with_text` - Include text elements in design
-    - `minimal_text` - Subtle text integration
 
 ##### Aspect Ratio
 - **`aspect_ratio`** (string): Image aspect ratio
@@ -661,11 +515,6 @@ Authorization: Bearer <token>
     - `pro`: 25 credits per image (Gemini Flash Image 2.5)
     - `max`: 40 credits per image (Ideogram 3.0)
 
-##### Shape Type
-- **`shape`** (string): Image shape type
-  - Options: `"circle"`, `"square"`, `"rectangle"`, `"hexagon"`, `"diamond"`, `"custom"`
-  - Default: `"circle"`
-
 ##### Aspect Ratio
 - **`aspect_ratio`** (string): Image aspect ratio
   - Options:
@@ -711,7 +560,7 @@ Authorization: Bearer <token>
 - **`count`** (integer): Number of images to generate
   - Range: 1-8
   - Default: 4
-  - Only for `/api/v1/images/generate-multiple` endpoint
+  - Only for `/api/v1/images/generate-images-from-prompt` endpoint
 
 ## 🛠️ Installation & Setup
 
@@ -853,8 +702,6 @@ curl -X POST "http://localhost:8000/api/v1/images/generate-prompt" \
   -H "Authorization: Bearer <your_token>" \
   -d '{
     "user_input": "Cyber cat NFT",
-    "shape": "hexagon",
-    "text_option": "minimal_text",
     "aspect_ratio": "16:9",
     "image_format": "webp",
     "style_preference": "holographic vaporwave",
@@ -883,54 +730,19 @@ curl "http://localhost:8000/api/v1/images/parameters/options"
 
 ### Image Generation
 
-#### Generate Single Image
-```bash
-curl -X POST "http://localhost:8000/api/v1/images/generate" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <your_token>" \
-  -d '{
-    "prompt": "A cute Shiba Inu meme character with diamond hands, cartoon style",
-    "user_tier": "free",
-    "shape": "circle",
-    "aspect_ratio": "1:1",
-    "image_format": "png",
-    "steps": 20,
-    "cfg_scale": 7.0
-  }'
-```
-
 #### Generate Multiple Images
 ```bash
-curl -X POST "http://localhost:8000/api/v1/images/generate-multiple" \
+curl -X POST "http://localhost:8000/api/v1/images/generate-images-from-prompt" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <your_token>" \
   -d '{
     "prompt": "A cute Shiba Inu meme character with diamond hands, cartoon style",
     "user_tier": "free",
     "count": 3,
-    "shape": "circle",
     "aspect_ratio": "1:1",
     "image_format": "png",
     "steps": 20,
     "cfg_scale": 7.0
-  }'
-```
-
-#### Advanced Image Generation with All Parameters
-```bash
-curl -X POST "http://localhost:8000/api/v1/images/generate" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <your_token>" \
-  -d '{
-    "prompt": "A futuristic robot cat with laser eyes, cyberpunk style",
-    "user_tier": "dev",
-    "shape": "hexagon",
-    "aspect_ratio": "16:9",
-    "image_format": "webp",
-    "negative_prompt": "blurry, low quality, distorted, watermark",
-    "steps": 30,
-    "cfg_scale": 8.5,
-    "seed": 42
   }'
 ```
 

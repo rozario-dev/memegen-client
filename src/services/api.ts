@@ -100,7 +100,6 @@ class ApiService {
 
   // API endpoints
   async generatePrompt(request: PromptRequest): Promise<PromptResponse> {
-    console.log('Sending request to /generate-prompt:', request);
     try {
       const response = await this.api.post<PromptResponse>('/generate-prompt', request);
       console.log('Received response:', response.data);
@@ -192,23 +191,27 @@ class ApiService {
 
   async generateMultipleImagesDirect(request: DirectMultipleImageGenerationRequest): Promise<DirectImageGenerationResponse> {
     try {
-      const response = await this.api.post('/images/generate-images', request);
-      console.log('收到直接多图片生成响应:', response.data);
+      const response = await this.api.post('/images/generate-combined-images', request);
       return response.data.data || response.data;
     } catch (error) {
-      console.error('直接多图片生成失败:', error);
       throw error;
     }
   }
 
+  async generateMultipleImagesDirectAsync(request: DirectMultipleImageGenerationRequest): Promise<{ task_id: string; status: string }> {
+    const response = await this.api.post<{ task_id: string; status: string }>(
+      '/images/generate-combined-images/async',
+      request
+    );
+    return response.data;
+  }
+
   async modifyImage(request: ImageModifyRequest): Promise<ImageModifyResponse> {
-    console.log('发送图片修改请求:', request);
     try {
       const response = await this.api.post('/images/modify', request);
       console.log('收到图片修改响应:', response.data);
       return response.data.data || response.data;
     } catch (error) {
-      console.error('图片修改失败:', error);
       throw error;
     }
   }
