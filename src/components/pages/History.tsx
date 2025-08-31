@@ -7,14 +7,23 @@ export const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [hideFailedRecords, setHideFailedRecords] = useState(false);
+  const [hideFailedRecords, setHideFailedRecords] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const data = await apiService.getImageHistory();
+        const offset = (currentPage - 1) * pageSize;
+        const data = await apiService.getImageHistory(pageSize, offset);
         setHistoryData(data);
+        
+        // 计算总页数
+        if (data.total_count) {
+          setTotalPages(Math.ceil(data.total_count / pageSize));
+        }
       } catch (err) {
         setError('Failed to load history data');
         console.error('Error fetching history:', err);
@@ -24,7 +33,7 @@ export const History: React.FC = () => {
     };
 
     fetchHistory();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN', {
@@ -153,6 +162,11 @@ export const History: React.FC = () => {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">📚 Generation History</h1>
                 <p className="text-gray-600">
                   Total {historyData?.total_count || 0} records
+                  {totalPages > 1 && (
+                    <span className="ml-2">
+                      • Page {currentPage} of {totalPages}
+                    </span>
+                  )}
                 </p>
               </div>
               <button
@@ -173,6 +187,65 @@ export const History: React.FC = () => {
               {historyData.history
                 .filter(record => !hideFailedRecords || record.status === 'completed')
                 .map(renderHistoryItem)}
+              
+              {/* 分页控件 */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-8">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  
+                  <div className="flex items-center space-x-2">
+                    {/* 页码显示 */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">

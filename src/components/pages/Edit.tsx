@@ -341,27 +341,60 @@ export const Edit: React.FC = () => {
 
                     {/* Model selection */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Quality Level
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(USER_TIER_LABELS).map(([tier, label]) => (
-                          <button
-                            key={tier}
-                            type="button"
-                            onClick={() => setSelectedTier(tier as UserTierType)}
-                            className={`p-3 rounded-lg border text-left transition-colors ${
-                              selectedTier === tier
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="font-medium">{label}</div>
-                            <div className="text-xs text-gray-500">
-                              {CREDIT_COSTS[tier as UserTierType]} credit{CREDIT_COSTS[tier as UserTierType] > 1 ? 's' : ''}
-                            </div>
-                          </button>
-                        ))}
+                      <div className="flex items-center mb-4">
+                        <span className="text-2xl mr-2">🎯</span>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Choose Modification Model
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {Object.entries(USER_TIER_LABELS).map(([tier, label]) => {
+                          const isSelected = selectedTier === tier;
+                          const credits = CREDIT_COSTS[tier as UserTierType];
+                          
+                          // Define icons and colors for each tier
+                          const tierConfig = {
+                            free: '🆓',
+                            dev: '⚡', 
+                            pro: '💎',
+                            max: '🚀'
+                            // free: { icon: '🆓', bgColor: 'bg-gray-100', borderColor: 'border-gray-300', textColor: 'text-gray-700' },
+                            // dev: { icon: '⚡', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-700' },
+                            // pro: { icon: '💎', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-700' },
+                            // max: { icon: '🚀', bgColor: 'bg-purple-50', borderColor: 'border-purple-300', textColor: 'text-purple-700' }
+                          }[tier as UserTierType];
+                          
+                          return (
+                            <button
+                              key={tier}
+                              type="button"
+                              onClick={() => setSelectedTier(tier as UserTierType)}
+                              className={`relative p-4 rounded-xl border-2 text-center transition-all duration-200 hover:scale-105 ${
+                                isSelected
+                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-gray-300'
+                              }`}
+                            >
+                              {/* Selection indicator */}
+                              {isSelected && (
+                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-xs">✓</span>
+                                </div>
+                              )}
+                              
+                              {/* Tier icon */}
+                              <div className="text-lg mb-1">{tierConfig}</div>
+                              
+                              {/* Tier name */}
+                              <div className="text-sm font-medium text-gray-800">{label}</div>
+                              
+                              {/* Credits */}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {credits} credit{credits > 1 ? 's' : ''}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 

@@ -217,9 +217,18 @@ class ApiService {
     }
   }
 
-  async getImageHistory(): Promise<ImageHistoryResponse> {
+  async getImageHistory(limit?: number, offset?: number): Promise<ImageHistoryResponse> {
     try {
-      const response = await this.api.get<ImageHistoryResponse>('/auth/image-history');
+      const params = new URLSearchParams();
+      if (limit !== undefined) {
+        params.append('limit', limit.toString());
+      }
+      if (offset !== undefined) {
+        params.append('offset', offset.toString());
+      }
+      
+      const url = `/auth/image-history${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await this.api.get<ImageHistoryResponse>(url);
       console.log('收到图片历史记录响应:', response.data);
       return response.data;
     } catch (error) {
