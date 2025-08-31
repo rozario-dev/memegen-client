@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { apiService } from '../../services/api';
+import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, DirectMultipleImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
 
 interface ResultsDisplayProps {
@@ -11,6 +12,7 @@ interface ModifyState {
   selectedImageUuid: string | null;
   selectedImageUrl: string | null;
   modifyPrompt: string;
+  selectedTier: UserTierType;
   isModifying: boolean;
   error: string | null;
 }
@@ -40,6 +42,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     selectedImageUuid: null,
     selectedImageUrl: null,
     modifyPrompt: '',
+    selectedTier: 'free',
     isModifying: false,
     error: null
   });
@@ -76,7 +79,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       const modifyRequest: ImageModifyRequest = {
         prompt: modifyState.modifyPrompt.trim(),
         seed_image: modifyState.selectedImageUrl,
-        user_tier: 'free' // Default tier, could be passed as prop
+        user_tier: modifyState.selectedTier
       };
 
       const response = await apiService.modifyImage(modifyRequest);
@@ -85,6 +88,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         selectedImageUuid: null,
         selectedImageUrl: null,
         modifyPrompt: '',
+        selectedTier: 'free',
         isModifying: false,
         error: null
       });
@@ -252,7 +256,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </h3>
                 </div>
                 <button
-                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', error: null }))}
+                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', selectedTier: 'free', error: null }))}
                   className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,8 +265,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-4">
+              <div className="flex flex-col lg:flex-row gap-8">
+                <div className="lg:w-1/3 space-y-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                     <h4 className="text-lg font-bold text-gray-800">Original Image</h4>
@@ -273,11 +277,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                       alt="Selected image"
                       className="w-full h-auto rounded-xl border-3 border-gray-300 shadow-lg group-hover:shadow-xl transition-all duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    {/* <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
                   </div>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="lg:w-2/3 space-y-6">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                     <h4 className="text-lg font-bold text-gray-800">Modification Instructions</h4>
@@ -286,12 +290,58 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <textarea
                       value={modifyState.modifyPrompt}
                       onChange={(e) => setModifyState(prev => ({ ...prev, modifyPrompt: e.target.value }))}
-                      placeholder="Describe how you want to modify this image...\n\nExample:\n• Change the background to a sunset\n• Add sunglasses to the character\n• Make it more colorful"
+                      placeholder="Describe how you want to modify this image... ex: Change the background to a sunset, Add sunglasses to the character, Make it more colorful"
                       className="w-full h-40 p-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 resize-none transition-all duration-300 bg-white/80 backdrop-blur-sm"
                       maxLength={500}
                     />
                     <div className="absolute bottom-3 right-3 text-xs text-gray-400">
                       {modifyState.modifyPrompt.length}/500
+                    </div>
+                  </div>
+                  
+                  {/* Tier Selection for Modification */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700 flex items-center">
+                      <span className="mr-2">🎯</span>
+                      Choose Modification Model
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      {Object.entries(USER_TIER_LABELS).map(([tier, label]) => {
+                        const tierKey = tier as UserTierType;
+                        const cost = CREDIT_COSTS[tierKey];
+                        const isSelected = modifyState.selectedTier === tier;
+                        const tierIcons = {
+                          free: '🆓',
+                          dev: '⚡', 
+                          pro: '💎',
+                          max: '🚀'
+                        };
+                        
+                        return (
+                          <label key={tier} className="cursor-pointer">
+                            <input
+                              type="radio"
+                              name="modifyTier"
+                              value={tier}
+                              checked={isSelected}
+                              onChange={(e) => setModifyState(prev => ({ ...prev, selectedTier: e.target.value as UserTierType }))}
+                              className="sr-only"
+                            />
+                            <div className={`p-3 rounded-lg border-2 transition-all duration-200 text-center ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                : 'border-gray-200 bg-white hover:border-gray-300'
+                            }`}>
+                              <div className="text-lg mb-1">{tierIcons[tierKey]}</div>
+                              <div className="text-sm font-medium text-gray-800">{label}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {cost} credit{cost > 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                   
@@ -328,6 +378,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                         </svg>
                         <span>Modify Image</span>
+                        <div className="ml-2 px-2 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
+                          {CREDIT_COSTS[modifyState.selectedTier]} credit{CREDIT_COSTS[modifyState.selectedTier] > 1 ? 's' : ''}
+                        </div>
                       </div>
                     )}
                   </button>

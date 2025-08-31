@@ -11,9 +11,9 @@ export type UserTierType = keyof typeof CREDIT_COSTS;
 // User tier display names
 export const USER_TIER_LABELS = {
   free: 'Free',
-  dev: 'Developer',
-  pro: 'Professional',
-  max: 'Maximum'
+  dev: 'Dev',
+  pro: 'Pro',
+  max: 'Max'
 } as const;
 
 // User tier descriptions

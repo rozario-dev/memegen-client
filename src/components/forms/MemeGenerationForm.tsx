@@ -343,20 +343,6 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
               );
             })}
           </div>
-          
-          {/* Current selection summary */}
-          {/* <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-sm font-medium text-gray-700">Selected:</span>
-                <span className="ml-2 font-bold text-gray-900">{USER_TIER_LABELS[selectedTier]}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-sm text-gray-600 mr-2">Cost:</span>
-                <span className="font-bold text-blue-600">{CREDIT_COSTS[selectedTier]} credit{CREDIT_COSTS[selectedTier] > 1 ? 's' : ''}</span>
-              </div>
-            </div>
-          </div> */}
         </div>
 
         {/* Submit Button */}
