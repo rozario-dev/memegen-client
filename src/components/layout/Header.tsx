@@ -44,39 +44,41 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               </div>
             </div>
 
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                to="/create"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/create'
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                🎨 Create
-              </Link>
-              <Link
-                to="/edit"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/edit'
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                ✏️ Edit
-              </Link>
-              <Link
-                to="/history"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/history'
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                📚 History
-              </Link>
-            </nav>
+            {/* Navigation - Only show when user is logged in */}
+            {user && (
+              <nav className="hidden md:flex items-center space-x-8">
+                <Link
+                  to="/create"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    location.pathname === '/create'
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  🎨 Create
+                </Link>
+                <Link
+                  to="/edit"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    location.pathname === '/edit'
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  ✏️ Edit
+                </Link>
+                <Link
+                  to="/history"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    location.pathname === '/history'
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  📚 History
+                </Link>
+              </nav>
+            )}
 
             {/* Wallet Button and Auth */}
             <div className="flex items-center space-x-4">              
@@ -135,31 +137,43 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
-            <Link
-              to="/create"
-              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                location.pathname === '/create'
-                  ? 'text-purple-600 bg-purple-50'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              🎨 Create
-            </Link>
-            <Link
-              to="/history"
-              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                location.pathname === '/history'
-                  ? 'text-purple-600 bg-purple-50'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              📚 History
-            </Link>
+        {/* Mobile Navigation - Only show when user is logged in */}
+        {user && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+              <Link
+                to="/create"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  location.pathname === '/create'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                🎨 Create
+              </Link>
+              <Link
+                to="/edit"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  location.pathname === '/edit'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                ✏️ Edit
+              </Link>
+              <Link
+                to="/history"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  location.pathname === '/history'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                📚 History
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       <LoginModal
