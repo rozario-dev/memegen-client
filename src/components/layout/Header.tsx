@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { LoginModal } from '../auth/LoginModal';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -9,6 +10,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, logout, loading, solanaWalletAddress } = useAuth();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -43,26 +45,38 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             </div>
 
             {/* Navigation */}
-            {/* <nav className="hidden md:flex items-center space-x-8">
-              <a
-                href="#generate"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link
+                to="/create"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/create'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
               >
-                Generate
-              </a>
-              <a
-                href="#features"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                🎨 Create
+              </Link>
+              <Link
+                to="/edit"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/edit'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
               >
-                Features
-              </a>
-              <a
-                href="#about"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                ✏️ Edit
+              </Link>
+              <Link
+                to="/history"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === '/history'
+                    ? 'text-purple-600 bg-purple-50'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
               >
-                About
-              </a>
-            </nav> */}
+                📚 History
+              </Link>
+            </nav>
 
             {/* Wallet Button and Auth */}
             <div className="flex items-center space-x-4">              
@@ -93,29 +107,28 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                                           !user.email || 
                                           user.email === user.id;
                       
-                      console.log('Is Solana user:', isSolanaUser);
-                      
-                      if (isSolanaUser && user.id) {
+                      if (isSolanaUser) {
+                        // For Solana users, show truncated user ID
                         return `${user.id.slice(0, 4)}...${user.id.slice(-4)}`;
                       } else {
-                        return user.email || user.id;
+                        // For regular users, show email
+                        return user.email;
                       }
-                    })()
-                    }
+                    })()} 
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
                   >
-                    Sign Out
+                    Logout
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors text-sm"
                 >
-                  Sign In
+                  Login
                 </button>
               )}
             </div>
@@ -124,36 +137,35 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
         {/* Mobile Navigation */}
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <a
-              href="#generate"
-              className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+            <Link
+              to="/create"
+              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                location.pathname === '/create'
+                  ? 'text-purple-600 bg-purple-50'
+                  : 'text-gray-700 hover:text-gray-900'
+              }`}
             >
-              Generate
-            </a>
-            <a
-              href="#features"
-              className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+              🎨 Create
+            </Link>
+            <Link
+              to="/history"
+              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                location.pathname === '/history'
+                  ? 'text-purple-600 bg-purple-50'
+                  : 'text-gray-700 hover:text-gray-900'
+              }`}
             >
-              Features
-            </a>
-            <a
-              href="#about"
-              className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium transition-colors"
-            >
-              About
-            </a>
+              📚 History
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Login Modal */}
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
-      
-
     </>
   );
 };

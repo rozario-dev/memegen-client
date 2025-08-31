@@ -13,7 +13,8 @@ import type {
   DirectMultipleImageGenerationRequest,
   ImageModifyRequest,
   ImageModifyResponse,
-  DirectImageGenerationResponse
+  DirectImageGenerationResponse,
+  ImageHistoryResponse
 } from '../types/api';
 
 class ApiService {
@@ -211,6 +212,16 @@ class ApiService {
       const response = await this.api.post('/images/modify', request);
       console.log('收到图片修改响应:', response.data);
       return response.data.data || response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getImageHistory(): Promise<ImageHistoryResponse> {
+    try {
+      const response = await this.api.get<ImageHistoryResponse>('/auth/image-history');
+      console.log('收到图片历史记录响应:', response.data);
+      return response.data;
     } catch (error) {
       throw error;
     }
