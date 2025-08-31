@@ -25,7 +25,6 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
     aspect_ratio: '1:1',
     image_format: 'png',
     style_preference: '',
-    background_preference: '',
   });
 
   const [charCount, setCharCount] = useState(0);
@@ -204,7 +203,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
 
           {/* Background Preference */}
-          <div className="md:col-span-2">
+          {/* <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Background Preference (Optional)
             </label>
@@ -216,7 +215,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="e.g., neon city, cosmic space"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Model Selection */}

@@ -100,7 +100,6 @@ Authorization: Bearer <token>
   "aspect_ratio": "1:1",
   "image_format": "png",
   "style_preference": "cyberpunk neon",
-  "background_preference": "cosmic starfield"
 }
 ```
 
@@ -114,7 +113,6 @@ Authorization: Bearer <token>
     "aspect_ratio": "1:1",
     "image_format": "png",
     "style_preference": "cyberpunk neon",
-    "background_preference": "cosmic starfield"
   },
   "created_at": "2024-01-15T10:30:00Z",
   "status": "completed"
@@ -204,7 +202,6 @@ Authorization: Bearer <token>
   "aspect_ratio": "1:1",
   "image_format": "png",
   "style_preference": "3D rendered",
-  "background_preference": "Mars landscape",
   "negative_prompt": "blurry, low quality",
   "steps": 20,
   "cfg_scale": 7.0
@@ -301,7 +298,6 @@ Authorization: Bearer <token>
 - **`user_tier`** (optional): User tier for model selection (default: "free")
 - **`count`** (optional, multiple images only): Number of images to generate (1-8, default: 4)
 - **`style_preference`** (optional): Specific style preference (max 100 characters)
-- **`background_preference`** (optional): Background preference (max 100 characters)
 - **`negative_prompt`**, **`steps`**, **`cfg_scale`**, **`seed`**: Advanced parameters
 
 ### Image Generation Endpoints
@@ -705,7 +701,6 @@ curl -X POST "http://localhost:8000/api/v1/images/generate-prompt" \
     "aspect_ratio": "16:9",
     "image_format": "webp",
     "style_preference": "holographic vaporwave",
-    "background_preference": "neon city skyline"
   }'
 ```
 

@@ -3,7 +3,6 @@ export interface PromptRequest {
   aspect_ratio: AspectRatio;
   image_format: ImageFormat;
   style_preference?: string;
-  background_preference?: string;
 }
 
 export interface PromptResponse {
@@ -14,7 +13,6 @@ export interface PromptResponse {
     aspect_ratio: string;
     image_format: string;
     style_preference?: string;
-    background_preference?: string;
   };
   created_at: string;
   status: string;
@@ -127,7 +125,6 @@ export interface DirectMultipleImageGenerationRequest {
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
   style_preference?: string;
-  background_preference?: string;
   negative_prompt?: string;
   steps?: number;
   cfg_scale?: number;
