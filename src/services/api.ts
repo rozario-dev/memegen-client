@@ -102,8 +102,7 @@ class ApiService {
   // API endpoints
   async generatePrompt(request: PromptRequest): Promise<PromptResponse> {
     try {
-      const response = await this.api.post<PromptResponse>('/generate-prompt', request);
-      console.log('Received response:', response.data);
+      const response = await this.api.post<PromptResponse>('/images/generate-prompt', request);
       return response.data;
     } catch (error) {
       console.error('API request failed:', error);
@@ -124,13 +123,13 @@ class ApiService {
   }
 
   async getTaskStatus(taskId: string): Promise<TaskStatus> {
-    const response = await this.api.get<TaskStatus>(`/task/${taskId}`);
+    const response = await this.api.get<TaskStatus>(`/images/task/${taskId}`);
     return response.data;
   }
 
   async getParameterOptions(): Promise<ParameterOptions> {
     try {
-      const response = await this.api.get<ParameterOptions>('/parameters/options');
+      const response = await this.api.get<ParameterOptions>('/images/parameters/options');
       return response.data;
     } catch (error) {
       // Fallback to mock data when backend is not available
@@ -170,25 +169,20 @@ class ApiService {
     return response.data;
   }
 
-  async getQuotaUsage(limit: number = 50): Promise<UsageHistory> {
-    const response = await this.api.get<UsageHistory>(`/auth/quota/usage?limit=${limit}`);
-    return response.data;
-  }
+  // async getQuotaUsage(limit: number = 50): Promise<UsageHistory> {
+  //   const response = await this.api.get<UsageHistory>(`/auth/quota/usage?limit=${limit}`);
+  //   return response.data;
+  // }
 
-  async getUsageStats(): Promise<UsageStats> {
-    const response = await this.api.get<UsageStats>('/stats');
-    return response.data;
-  }
+  // async getUsageStats(): Promise<UsageStats> {
+  //   const response = await this.api.get<UsageStats>('/images/stats');
+  //   return response.data;
+  // }
 
-  async getHealthCheck(): Promise<HealthCheck> {
-    const response = await this.api.get<HealthCheck>('/health');
-    return response.data;
-  }
-
-  async getRoot(): Promise<Record<string, unknown>> {
-    const response = await this.api.get('/');
-    return response.data;
-  }
+  // async getHealthCheck(): Promise<HealthCheck> {
+  //   const response = await this.api.get<HealthCheck>('/health');
+  //   return response.data;
+  // }
 
   async generateMultipleImagesDirect(request: DirectMultipleImageGenerationRequest): Promise<DirectImageGenerationResponse> {
     try {
@@ -210,7 +204,6 @@ class ApiService {
   async modifyImage(request: ImageModifyRequest): Promise<ImageModifyResponse> {
     try {
       const response = await this.api.post('/images/modify', request);
-      console.log('收到图片修改响应:', response.data);
       return response.data.data || response.data;
     } catch (error) {
       throw error;
@@ -229,7 +222,6 @@ class ApiService {
       
       const url = `/auth/image-history${params.toString() ? '?' + params.toString() : ''}`;
       const response = await this.api.get<ImageHistoryResponse>(url);
-      console.log('收到图片历史记录响应:', response.data);
       return response.data;
     } catch (error) {
       throw error;
