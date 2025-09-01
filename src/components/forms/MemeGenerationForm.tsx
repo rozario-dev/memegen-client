@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useParameterOptions } from '../../hooks/useParameterOptions';
 import { apiService } from '../../services/api';
 import { LoginModal } from '../auth/LoginModal';
-import { CREDIT_COSTS, USER_TIER_LABELS, USER_TIER_DESCRIPTIONS, type UserTierType } from '../../config/config';
+import { CREDIT_COSTS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../types/api';
 import { ModelSelector } from './ModelSelector';
 
@@ -17,11 +17,11 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<UserTierType>('free');
+  const [selectedTier, setSelectedTier] = useState<UserTierType>('pro');
 
   const [formData, setFormData] = useState<DirectMultipleImageGenerationRequest>({
     user_input: '',
-    user_tier: 'free',
+    user_tier: 'pro',
     count: 1,
     aspect_ratio: '1:1',
     image_format: 'png',
@@ -140,7 +140,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         </div>
 
         {/* Parameters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Image Count */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Number of Images</label>
@@ -189,7 +189,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
 
           {/* Style Preference */}
-          <div>
+          <div className='hidden'>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Style Preference (Optional)
             </label>

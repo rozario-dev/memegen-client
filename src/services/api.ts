@@ -142,18 +142,18 @@ class ApiService {
         image_formats: ['png', 'jpg', 'webp'],
         descriptions: {
           aspect_ratios: {
-            '1:1': 'Square format - perfect for Instagram posts and profile pictures',
-            '16:9': 'Widescreen format - ideal for YouTube thumbnails and banners',
-            '4:3': 'Standard landscape - great for presentations',
-            '3:2': 'Classic photo ratio - balanced composition',
-            '2:3': 'Portrait orientation - good for mobile displays',
-            '3:4': 'Tall portrait - perfect for Instagram stories',
-            '9:16': 'Vertical format - optimized for mobile viewing'
+            '1:1': 'Square - perfect for Instagram posts and profile pictures',
+            '16:9': 'Widescreen - ideal for YouTube thumbnails and banners',
+            '4:3': 'Standard - great for presentations',
+            '3:2': 'Classic - balanced composition',
+            '2:3': 'Portrait - good for mobile displays',
+            '3:4': 'Tall - perfect for Instagram stories',
+            '9:16': 'Vertical - optimized for mobile viewing'
           },
           image_formats: {
-            png: 'PNG format with transparency support - best for logos',
-            jpg: 'JPEG format - smaller file size, good for photos',
-            webp: 'WebP format - modern format with excellent compression'
+            png: 'PNG - transparent images, best for logos',
+            jpg: 'JPEG - smaller file size, good for photos',
+            webp: 'WebP - modern format with excellent compression'
           }
         }
       };

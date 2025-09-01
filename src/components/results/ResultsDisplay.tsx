@@ -37,7 +37,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     selectedImageUuid: null,
     selectedImageUrl: null,
     modifyPrompt: '',
-    selectedTier: 'free',
+    selectedTier: 'pro',
     isModifying: false,
     error: null
   });
@@ -83,7 +83,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         selectedImageUuid: null,
         selectedImageUrl: null,
         modifyPrompt: '',
-        selectedTier: 'free',
+        selectedTier: 'pro',
         isModifying: false,
         error: null
       });
@@ -251,7 +251,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </h3>
                 </div>
                 <button
-                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', selectedTier: 'free', error: null }))}
+                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', selectedTier: 'pro', error: null }))}
                   className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

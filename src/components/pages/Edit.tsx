@@ -22,7 +22,7 @@ export const Edit: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<EditHistory[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
-  const [selectedTier, setSelectedTier] = useState<UserTierType>('free');
+  const [selectedTier, setSelectedTier] = useState<UserTierType>('pro');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
