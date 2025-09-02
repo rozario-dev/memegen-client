@@ -9,6 +9,7 @@ interface PhantomProvider {
   connect(): Promise<{ publicKey: { toString(): string } }>;
   disconnect(): Promise<void>;
   signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
+  signTransaction(transaction: any): Promise<any>;
 }
 
 declare global {

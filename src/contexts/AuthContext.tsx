@@ -4,8 +4,6 @@ import { supabase } from '../lib/supabase';
 import type { UserProfile, QuotaResponse } from '../types/api';
 import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 
-
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -217,7 +215,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     refreshQuota,
     isAuthenticated,
-
     solanaWalletAddress,
     setSolanaWallet,
   };

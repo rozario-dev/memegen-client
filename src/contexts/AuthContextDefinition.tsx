@@ -9,7 +9,6 @@ interface AuthContextType {
   logout: () => void;
   refreshQuota: () => Promise<void>;
   isAuthenticated: boolean;
-
   solanaWalletAddress: string | null;
   setSolanaWallet: (walletAddress: string) => void;
 }
