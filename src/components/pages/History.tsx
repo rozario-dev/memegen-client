@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import type { ImageHistoryResponse, HistoryRecord } from '../../types/api';
 
 export const History: React.FC = () => {
+  const navigate = useNavigate();
+  const { solanaWalletAddress } = useAuth();
   const [historyData, setHistoryData] = useState<ImageHistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +47,14 @@ export const History: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleCreateToken = (imageUrl: string) => {
+    if (!solanaWalletAddress) {
+      alert('Please connect your Solana wallet to create tokens');
+      return;
+    }
+    navigate('/launch', { state: { imageUrl } });
   };
 
   const renderHistoryItem = (record: HistoryRecord) => {
@@ -93,7 +105,7 @@ export const History: React.FC = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {isModify && record.seed_image && (
-            <div className="relative">
+            <div className="relative group">
               <img
                 src={record.seed_image}
                 alt="Original Image"
@@ -103,11 +115,22 @@ export const History: React.FC = () => {
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 Original Image
               </div>
+              {solanaWalletAddress && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCreateToken(record.seed_image!);
+                  }}
+                  className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  Create token
+                </button>
+              )}
             </div>
           )}
           
           {record.images && record.images.length > 0 && record.images.map((image, index) => (
-            <div key={image.image_uuid} className="relative">
+            <div key={image.image_uuid} className="relative group">
               <img
                 src={image.image_url}
                 alt={isModify ? 'Modified Image' : `Generated Image ${index + 1}`}
@@ -120,6 +143,17 @@ export const History: React.FC = () => {
               <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 {image.model_name}
               </div>
+              {solanaWalletAddress && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCreateToken(image.image_url);
+                  }}
+                  className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  Create token
+                </button>
+              )}
             </div>
           ))}
         </div>

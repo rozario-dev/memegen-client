@@ -4,6 +4,7 @@ import { Footer } from './components/layout/Footer';
 import { Create } from './components/pages/Create';
 import { Edit } from './components/pages/Edit';
 import { History } from './components/pages/History';
+import { Launch } from './components/pages/Launch';
 import { Welcome } from './components/pages/Welcome';
 import { useAuth } from './hooks/useAuth';
 
@@ -38,6 +39,7 @@ function App() {
               <Route path="/create" element={<Create />} />
               <Route path="/edit" element={<Edit />} />
               <Route path="/history" element={<History />} />
+              <Route path="/launch" element={<Launch />} />
               {/* Redirect any unknown routes to create when logged in */}
               <Route path="*" element={<Navigate to="/create" replace />} />
             </Routes>

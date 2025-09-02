@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
@@ -27,7 +29,17 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   console.log('完整的 result 对象:', JSON.stringify(result, null, 2));
   console.log('========================');
   
+  const navigate = useNavigate();
+  const { solanaWalletAddress } = useAuth();
   const [copied, setCopied] = useState(false);
+
+  const handleCreateToken = (imageUrl: string) => {
+    if (!solanaWalletAddress) {
+      alert('Please connect your Solana wallet first to create tokens.');
+      return;
+    }
+    navigate('/launch', { state: { imageUrl } });
+  };
   
   // Helper function to get credits consumed
   const getCreditsConsumed = () => {
@@ -204,19 +216,38 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                         )}
                       </div>
                     </div>
-                    {/* Download Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(imageResult.image_url, '_blank');
-                      }}
-                      className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100"
-                      title="Open image in new tab"
-                    >
-                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      {/* Create Token Button - Only show for Solana users */}
+                      {solanaWalletAddress && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCreateToken(imageResult.image_url);
+                          }}
+                          className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-pink-600 hover:scale-110 transition-all duration-300"
+                          title="Create token with this image"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                      
+                      {/* Download Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(imageResult.image_url, '_blank');
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white hover:scale-110 transition-all duration-300"
+                        title="Open image in new tab"
+                      >
+                        <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </button>
+                    </div>
                     
                     {imageResult.isModified && (
                        <div className="absolute top-4 left-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">

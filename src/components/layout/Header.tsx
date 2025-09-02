@@ -77,6 +77,19 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 >
                   📚 History
                 </Link>
+                {/* Launch link - only show for Solana users */}
+                {solanaWalletAddress && (
+                  <Link
+                    to="/launch"
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      location.pathname === '/launch'
+                        ? 'text-purple-600 bg-purple-50'
+                        : 'text-gray-700 hover:text-gray-900'
+                    }`}
+                  >
+                    🚀 Launch
+                  </Link>
+                )}
               </nav>
             )}
 
@@ -171,6 +184,19 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               >
                 📚 History
               </Link>
+              {/* Launch link - only show for Solana users */}
+              {solanaWalletAddress && (
+                <Link
+                  to="/launch"
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    location.pathname === '/launch'
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  🚀 Launch
+                </Link>
+              )}
             </div>
           </div>
         )}

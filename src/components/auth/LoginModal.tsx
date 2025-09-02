@@ -59,9 +59,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       const publicKey = await connectSolanaWallet();
       console.log('Connected to Solana wallet:', publicKey);
       
-      // Set the Solana wallet in auth context
-      setSolanaWallet(publicKey);
-      
       // Step 3: Ensure wallet is connected
       if (!window.solana.isConnected) {
         console.log('Wallet not connected, attempting to connect...');
@@ -96,6 +93,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         console.log('User ID:', data.user.id);
         console.log('User metadata:', data.user.user_metadata);
         console.log('User app metadata:', data.user.app_metadata);
+        // Only set in context after successful auth
+        setSolanaWallet(publicKey);
       }
       
       console.log('Solana authentication successful');

@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import type { UserProfile, QuotaResponse } from '../types/api';
 import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 
+const SOLANA_WALLET_KEY = 'solana_wallet_address';
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -17,6 +19,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const initializeAuth = useCallback(async () => {
     try {
+      // Restore Solana wallet from localStorage if available
+      const storedWallet = localStorage.getItem(SOLANA_WALLET_KEY);
+      if (storedWallet) {
+        setSolanaWalletAddress(storedWallet);
+      } else if (typeof window !== 'undefined' && 'solana' in window) {
+        // Attempt trusted auto-connect to restore wallet on refresh
+        try {
+          const provider = (window as any).solana;
+          const resp = await provider.connect?.({ onlyIfTrusted: true });
+          const addr = resp?.publicKey?.toString?.();
+          if (addr) {
+            setSolanaWalletAddress(addr);
+            localStorage.setItem(SOLANA_WALLET_KEY, addr);
+          }
+        } catch (_) {
+          // ignore if wallet not trusted or auto-connect not supported
+        }
+      }
+
       // Check for existing Supabase session first
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -60,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               if (solanaProvider && solanaProvider.publicKey) {
                 const walletAddress = solanaProvider.publicKey.toString();
                 setSolanaWalletAddress(walletAddress);
+                localStorage.setItem(SOLANA_WALLET_KEY, walletAddress);
                 console.log('Solana wallet address stored:', walletAddress);
               }
             }
@@ -75,10 +97,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(null);
             setQuota(null);
             setSolanaWalletAddress(null);
+            localStorage.removeItem(SOLANA_WALLET_KEY);
           }
         }
       }
     );
+
+    // Wallet event listeners (account change / disconnect)
+    let provider: any;
+    if (typeof window !== 'undefined' && 'solana' in window) {
+      provider = (window as any).solana;
+      const handleAccountChange = (pk: any) => {
+        const addr = pk?.toString?.();
+        if (addr) {
+          setSolanaWalletAddress(addr);
+          localStorage.setItem(SOLANA_WALLET_KEY, addr);
+        } else {
+          setSolanaWalletAddress(null);
+          localStorage.removeItem(SOLANA_WALLET_KEY);
+        }
+      };
+      const handleDisconnect = () => {
+        setSolanaWalletAddress(null);
+        localStorage.removeItem(SOLANA_WALLET_KEY);
+      };
+      try {
+        provider?.on?.('accountChanged', handleAccountChange);
+        provider?.on?.('disconnect', handleDisconnect);
+      } catch {}
+    }
 
     // Listen for auth expiration
     const handleAuthExpired = () => {
@@ -90,6 +137,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('auth:expired', handleAuthExpired);
+      try {
+        provider?.removeListener?.('accountChanged');
+        provider?.removeListener?.('disconnect');
+      } catch {}
     };
   }, [initializeAuth]);
 
@@ -166,6 +217,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setQuota(null);
       setSolanaWalletAddress(null);
+      localStorage.removeItem(SOLANA_WALLET_KEY);
 
       // Sign out from Supabase (handles Google and GitHub)
       await supabase.auth.signOut();
@@ -202,6 +254,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const setSolanaWallet = (walletAddress: string) => {
     setSolanaWalletAddress(walletAddress);
+    localStorage.setItem(SOLANA_WALLET_KEY, walletAddress);
     console.log('Solana wallet address set:', walletAddress);
   };
 
