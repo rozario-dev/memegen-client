@@ -3,6 +3,7 @@ import { apiService } from '../services/api';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, QuotaResponse } from '../types/api';
 import { AuthContext, type AuthContextType } from './AuthContextDefinition';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const SOLANA_WALLET_KEY = 'solana_wallet_address';
 
@@ -17,25 +18,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const [solanaWalletAddress, setSolanaWalletAddress] = useState<string | null>(null);
 
+  // Wallet-adapter hook for Solana wallet state
+  const { connected, publicKey, disconnect } = useWallet();
+
   const initializeAuth = useCallback(async () => {
     try {
-      // Restore Solana wallet from localStorage if available
+      // Restore Solana wallet address from localStorage for initial UI gating
       const storedWallet = localStorage.getItem(SOLANA_WALLET_KEY);
       if (storedWallet) {
         setSolanaWalletAddress(storedWallet);
-      } else if (typeof window !== 'undefined' && 'solana' in window) {
-        // Attempt trusted auto-connect to restore wallet on refresh
-        try {
-          const provider = (window as any).solana;
-          const resp = await provider.connect?.({ onlyIfTrusted: true });
-          const addr = resp?.publicKey?.toString?.();
-          if (addr) {
-            setSolanaWalletAddress(addr);
-            localStorage.setItem(SOLANA_WALLET_KEY, addr);
-          }
-        } catch (_) {
-          // ignore if wallet not trusted or auto-connect not supported
-        }
       }
 
       // Check for existing Supabase session first
@@ -61,6 +52,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  // Sync wallet-adapter connection state to our AuthContext
+  useEffect(() => {
+    const addr = publicKey?.toBase58();
+    if (connected && addr) {
+      setSolanaWalletAddress(addr);
+      localStorage.setItem(SOLANA_WALLET_KEY, addr);
+    }
+  }, [connected, publicKey]);
+
   useEffect(() => {
     initializeAuth();
 
@@ -72,26 +72,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           apiService.setToken(token);
           try {
             await loadUserData();
-            // Determine provider type
-            const provider = session.user?.app_metadata?.provider || 'unknown';
-            
-            // If this is a Solana login, get the wallet address
-            if (provider === 'solana' && typeof window !== 'undefined' && 'solana' in window) {
-              const solanaProvider = (window as any).solana;
-              if (solanaProvider && solanaProvider.publicKey) {
-                const walletAddress = solanaProvider.publicKey.toString();
-                setSolanaWalletAddress(walletAddress);
-                localStorage.setItem(SOLANA_WALLET_KEY, walletAddress);
-                console.log('Solana wallet address stored:', walletAddress);
-              }
+            // If this is a Solana login, persist the wallet address using wallet-adapter state
+            const addr = publicKey?.toBase58();
+            if (addr) {
+              setSolanaWalletAddress(addr);
+              localStorage.setItem(SOLANA_WALLET_KEY, addr);
+              console.log('Solana wallet address stored:', addr);
             }
-            
-
           } catch (error) {
             console.error('Failed to load user data after sign in:', error);
           }
         } else if (event === 'SIGNED_OUT') {
-          // Only clear local state if not already cleared
           if (apiService.isAuthenticated()) {
             apiService.clearToken();
             setUser(null);
@@ -103,30 +94,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    // Wallet event listeners (account change / disconnect)
-    let provider: any;
-    if (typeof window !== 'undefined' && 'solana' in window) {
-      provider = (window as any).solana;
-      const handleAccountChange = (pk: any) => {
-        const addr = pk?.toString?.();
-        if (addr) {
-          setSolanaWalletAddress(addr);
-          localStorage.setItem(SOLANA_WALLET_KEY, addr);
-        } else {
-          setSolanaWalletAddress(null);
-          localStorage.removeItem(SOLANA_WALLET_KEY);
-        }
-      };
-      const handleDisconnect = () => {
-        setSolanaWalletAddress(null);
-        localStorage.removeItem(SOLANA_WALLET_KEY);
-      };
-      try {
-        provider?.on?.('accountChanged', handleAccountChange);
-        provider?.on?.('disconnect', handleDisconnect);
-      } catch {}
-    }
-
     // Listen for auth expiration
     const handleAuthExpired = () => {
       logout();
@@ -137,12 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('auth:expired', handleAuthExpired);
-      try {
-        provider?.removeListener?.('accountChanged');
-        provider?.removeListener?.('disconnect');
-      } catch {}
     };
-  }, [initializeAuth]);
+  }, [initializeAuth, publicKey]);
 
   const loadUserData = async () => {
     try {
@@ -222,17 +185,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Sign out from Supabase (handles Google and GitHub)
       await supabase.auth.signOut();
 
-      // Disconnect Solana wallet if connected
-      if (typeof window !== 'undefined' && 'solana' in window) {
-        const provider = (window as any).solana;
-        if (provider && provider.isPhantom && provider.isConnected) {
-          try {
-            await provider.disconnect();
-            console.log('Solana wallet disconnected');
-          } catch (solanaError) {
-            console.error('Error disconnecting Solana wallet:', solanaError);
-          }
-        }
+      // Disconnect Solana wallet if connected via wallet-adapter
+      try {
+        await disconnect();
+        console.log('Solana wallet disconnected');
+      } catch (solanaError) {
+        console.error('Error disconnecting Solana wallet:', solanaError);
       }
     } catch (error) {
       console.error('Error during logout:', error);
@@ -249,8 +207,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
   };
-
-
 
   const setSolanaWallet = (walletAddress: string) => {
     setSolanaWalletAddress(walletAddress);

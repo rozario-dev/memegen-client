@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { connectSolanaWallet, SolanaWalletError } from '../../lib/solana';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletReadyState } from '@solana/wallet-adapter-base';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { setSolanaWallet } = useAuth();
+  const { connected, connecting, publicKey, connect, wallets, wallet, select } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
@@ -19,21 +21,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     try {
       setIsLoading(true);
       setLoadingProvider(provider);
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+        options: { redirectTo: `${window.location.origin}/auth/callback` }
       });
-
       if (error) {
         console.error(`${provider} login error:`, error);
         alert(`Login failed: ${error.message}`);
         return;
       }
-
-      // The redirect will handle the rest
       onClose();
     } catch (error) {
       console.error(`Unexpected error during ${provider} login:`, error);
@@ -44,72 +40,119 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const autoSelectWalletIfNeeded = () => {
+    if (wallet) return; // already selected
+    // 优先选择 Phantom，如果可用
+    const phantom = wallets.find(w => w.adapter.name === 'Phantom' && (w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable));
+    const installed = wallets.find(w => w.readyState === WalletReadyState.Installed);
+    const loadable = wallets.find(w => w.readyState === WalletReadyState.Loadable);
+    const target = phantom || installed || loadable;
+    if (!target) {
+      throw new Error('No available Solana wallet detected. Please install Phantom or open in a supported wallet.');
+    }
+    select(target.adapter.name);
+  };
+
+  // 等待 publicKey 就绪，解决断开后首次重连时 publicKey 读取为 null 的竞态
+  const waitForPublicKey = async (getPk: () => any, timeoutMs = 3000) => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const pk = getPk();
+      if (pk) return pk;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return null;
+  };
+
+  // 等待 Supabase 会话完全清空，避免与上一次 SIGNED_OUT 事件产生竞态
+  const waitForSignedOut = async (timeoutMs = 1500) => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return true;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return false;
+  };
+
   const handleSolanaLogin = async () => {
     try {
       setIsLoading(true);
       setLoadingProvider('solana');
-      
-      // Step 1: Check if Solana wallet is available
-      if (!window.solana) {
-        throw new Error('Solana wallet not found. Please install a Solana wallet like Phantom.');
+      console.log("===1===")
+      // 确保上一次登出的 SIGNED_OUT 已经完全处理
+      await waitForSignedOut();
+      console.log("===2===")
+      // 通过 wallet-adapter 连接钱包（未选择时自动选择一个可用钱包）
+      let didConnectNow = false;
+      if (!connected) {
+        console.log("===2.1===")
+        autoSelectWalletIfNeeded();
+        console.log("===2.2===")
+        await connect();
+        console.log("===2.3===")
+        didConnectNow = true;
       }
-      
-      // Step 2: Connect to Solana wallet
-      console.log('Connecting to Solana wallet...');
-      const publicKey = await connectSolanaWallet();
-      console.log('Connected to Solana wallet:', publicKey);
-      
-      // Step 3: Ensure wallet is connected
-      if (!window.solana.isConnected) {
-        console.log('Wallet not connected, attempting to connect...');
-        await window.solana.connect();
+      console.log("===3===")
+      // 某些环境下，connect() 刚结束时 publicKey 可能尚未同步到 hook，等待其就绪
+      let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+      if (!effectivePk) {
+        effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
       }
-      
-      console.log('Wallet connection status:', window.solana.isConnected);
-      console.log('Wallet public key:', window.solana.publicKey?.toString());
-      
-      // Step 4: Use Supabase's native Web3 authentication
-      console.log('Attempting Supabase Web3 authentication...');
-      const { data, error } = await supabase.auth.signInWithWeb3({
-        chain: 'solana',
-        statement: 'I accept the Terms of Service and want to sign in to this application',
-      });
-      
+      console.log("===4===")
+      const addr = effectivePk?.toBase58?.();
+      if (!addr) {
+        throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
+      }
+      console.log("===5===")
+      // 持久化地址到全局 AuthContext
+      setSolanaWallet(addr);
+      console.log("===6===")
+      // 如果是“刚刚完成连接”，给扩展一点冷却时间，避免连续弹出两个授权窗口造成失败
+      if (didConnectNow) {
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      console.log("===7===")
+      // 在调用 Web3 登录前稍作等待，给钱包适配器完成状态同步的时间
+      await new Promise((r) => setTimeout(r, 100));
+      console.log("===8===")
+      // 继续使用 Supabase 的 Web3 登录实现（兼容现有后端配置）- 带一次性短重试
+      const attemptSignIn = async () => {
+        return supabase.auth.signInWithWeb3({
+          chain: 'solana',
+          statement: 'I accept the Terms of Service and want to sign in to this application',
+        });
+      };
+      console.log("===9===")
+      let { data, error } = await attemptSignIn();
+      console.log("===10===")
+      // 如果首次尝试失败且不是用户主动拒绝，进行一次短重试
+      if (error) {
+        const msg = (error.message || '').toLowerCase();
+        const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
+        if (!isUserReject) {
+          await new Promise((r) => setTimeout(r, 300));
+          ({ data, error } = await attemptSignIn());
+        }
+      }
+      console.log("===11===")
       if (error) {
         console.error('Supabase Web3 signin error:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        
-        // Check if it's a configuration issue
-        if (error.message?.includes('Web3 provider not enabled') || 
-            error.message?.includes('provider not configured')) {
+        if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
           throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
         }
-        
         throw new Error(`Web3 authentication failed: ${error.message}`);
       }
-      
+      console.log("===12===")
       if (data?.user) {
         console.log('Supabase Web3 sign in successful!');
-        console.log('User ID:', data.user.id);
-        console.log('User metadata:', data.user.user_metadata);
-        console.log('User app metadata:', data.user.app_metadata);
-        // Only set in context after successful auth
-        setSolanaWallet(publicKey);
       }
-      
-      console.log('Solana authentication successful');
+
       onClose();
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Solana authentication error:', error);
-      
-      if (error instanceof SolanaWalletError) {
-        alert(error.message);
-      } else if (error && typeof error === 'object' && 'message' in error) {
-        alert(`Authentication failed: ${(error as any).message}`);
-      } else {
-        alert('Failed to authenticate with Solana wallet. Please try again.');
-      }
+      alert(error?.message || 'Failed to authenticate with Solana wallet. Please try again.');
+      // 保持钱包连接，便于用户直接重试，不主动 disconnect()
     } finally {
       setIsLoading(false);
       setLoadingProvider(null);
@@ -121,96 +164,34 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Sign In</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
         <div className="space-y-4">
-          {/* Google Login */}
-          {isSupabaseConfigured && (
-            <button
-              onClick={() => handleOAuthLogin('google')}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingProvider === 'google' ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-              ) : (
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-              )}
-              <span className="text-sm font-medium text-gray-700">
-                {loadingProvider === 'google' ? 'Connecting...' : 'Continue with Google'}
-              </span>
-            </button>
-          )}
+          <button
+            onClick={() => handleOAuthLogin('google')}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border hover:bg-gray-50"
+          >
+            <span className="text-sm font-medium text-gray-700">
+              {loadingProvider === 'google' ? 'Connecting...' : 'Continue with Google'}
+            </span>
+          </button>
 
-          {/* GitHub Login */}
-          {isSupabaseConfigured && (
-            <button
-              onClick={() => handleOAuthLogin('github')}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingProvider === 'github' ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-              ) : (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              )}
-              <span className="text-sm font-medium text-gray-700">
-                {loadingProvider === 'github' ? 'Connecting...' : 'Continue with GitHub'}
-              </span>
-            </button>
-          )}
+          <button
+            onClick={() => handleOAuthLogin('github')}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border hover:bg-gray-50"
+          >
+            <span className="text-sm font-medium text-gray-700">
+              {loadingProvider === 'github' ? 'Connecting...' : 'Continue with GitHub'}
+            </span>
+          </button>
 
-          {/* Solana Login */}
           <button
             onClick={handleSolanaLogin}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center space-x-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || connecting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border hover:bg-gray-50"
           >
-            {loadingProvider === 'solana' ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
-            ) : (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M4.5 7.5L19.5 7.5C20.3284 7.5 21 8.17157 21 9C21 9.82843 20.3284 10.5 19.5 10.5L4.5 10.5C3.67157 10.5 3 9.82843 3 9C3 8.17157 3.67157 7.5 4.5 7.5Z"
-                  fill="#9945FF"
-                />
-                <path
-                  d="M4.5 13.5L19.5 13.5C20.3284 13.5 21 14.1716 21 15C21 15.8284 20.3284 16.5 19.5 16.5L4.5 16.5C3.67157 16.5 3 15.8284 3 15C3 14.1716 3.67157 13.5 4.5 13.5Z"
-                  fill="#14F195"
-                />
-              </svg>
-            )}
             <span className="text-sm font-medium text-gray-700">
-              {loadingProvider === 'solana' ? 'Connecting...' : 'Connect with Solana'}
+              {loadingProvider === 'solana' ? 'Connecting...' : (connected ? 'Sign in with Solana' : 'Connect with Solana')}
             </span>
           </button>
 

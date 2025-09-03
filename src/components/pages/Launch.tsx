@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation, Navigate } from 'react-router-dom';
 import { compressImage, formatAddress } from '../../utils/format';
-import { Connection, clusterApiUrl, PublicKey, VersionedTransaction, TransactionMessage } from '@solana/web3.js';
+import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 
 const LazyLaunchTokenButton = React.lazy(() => import('@flipflop-sdk/tools').then(m => ({ default: m.LaunchTokenButton })));
 
@@ -13,6 +13,7 @@ interface TokenFormData {
   symbol: string;
   image: File | null;
   imageUrl: string;
+  tokenType: 'meme' | 'standard';
 }
 
 export const Launch: React.FC<LaunchProps> = () => {
@@ -22,7 +23,8 @@ export const Launch: React.FC<LaunchProps> = () => {
     name: '',
     symbol: '',
     image: null,
-    imageUrl: ''
+    imageUrl: '',
+    tokenType: 'meme',
   });
   const [isCreating, setIsCreating] = useState(false);
   const [createStatus, setCreateStatus] = useState<{
@@ -30,6 +32,9 @@ export const Launch: React.FC<LaunchProps> = () => {
     message: string;
   }>({ type: null, message: '' });
   const [dragActive, setDragActive] = useState(false);
+
+  const wallet = useAnchorWallet();
+  const { connection } = useConnection();
 
   // Match SDK image size constraint (MAX_AVATAR_SIZE = 250KB)
   const MAX_IMAGE_SIZE_MB = 0.25;
@@ -53,7 +58,17 @@ export const Launch: React.FC<LaunchProps> = () => {
           const type = blob.type || 'image/png';
           const ext = type.split('/')[1] || 'png';
           const file = new File([blob], `token.${ext}` , { type });
-          setFormData(prev => ({ ...prev, image: file }));
+          // compress image
+          const sizeMb = file.size / (1024 * 1024);
+          if (sizeMb > MAX_IMAGE_SIZE_MB) {
+            compressImage(file, MAX_IMAGE_SIZE_MB, 300, 300).then((compressedFile) => {
+              setFormData(prev => ({ ...prev, image: compressedFile }));
+            }).catch(() => {
+              setCreateStatus({ type: 'error', message: 'Image compression failed.' });
+            })
+          } else {
+            setFormData(prev => ({ ...prev, image: file }));
+          }
         } catch (_e) {
           // noop if cannot fetch due to CORS or invalid URL; user can re-upload manually
         }
@@ -66,115 +81,15 @@ export const Launch: React.FC<LaunchProps> = () => {
     import.meta.env.VITE_SOLANA_NETWORK === 'mainnet' ? 'mainnet' : 'devnet'
   ) as 'devnet' | 'mainnet', []);
 
-  const connection = useMemo(() => {
-    const cluster = network === 'mainnet' ? 'mainnet-beta' : 'devnet';
-    const rpcUrl = import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(cluster);
-    return new Connection(rpcUrl, 'confirmed');
-  }, [network]);
-
-  // ######
-  const wallet = useMemo(() => {
-    const provider = (window as any)?.solana;
-    try {
-      if (provider?.publicKey && (provider?.signTransaction || provider?.signAndSendTransaction)) {
-        const publicKey = new PublicKey(provider.publicKey.toString());
-
-        // Base signer references
-        const rawSignTx: ((tx: any) => Promise<any>) | undefined = provider.signTransaction?.bind(provider);
-        const rawSignAll: ((txs: any[]) => Promise<any[]>) | undefined = provider.signAllTransactions?.bind(provider);
-
-        // Wrapper: try legacy sign, fallback to v0 VersionedTransaction
-        const signTransaction = async (tx: any) => {
-          if (!rawSignTx) throw new Error('Wallet does not support signTransaction');
-          try {
-            return await rawSignTx(tx);
-          } catch (e: any) {
-            const msg = String(e?.message || e || '');
-            // Fallback: build and sign v0 tx if wallet complains about message.header/numRequiredSignatures
-            if (msg.includes('numRequiredSignatures') || msg.includes('message.header')) {
-              if (!tx?.feePayer || !tx?.recentBlockhash || !tx?.instructions) throw e;
-              const compiled = new TransactionMessage({
-                payerKey: tx.feePayer,
-                recentBlockhash: tx.recentBlockhash,
-                instructions: tx.instructions,
-              }).compileToV0Message();
-              const vtx = new VersionedTransaction(compiled);
-              return await rawSignTx(vtx);
-            }
-            throw e;
-          }
-        };
-
-        const signAllTransactions = async (txs: any[]) => {
-          if (rawSignAll) {
-            try {
-              return await rawSignAll(txs);
-            } catch (e: any) {
-              const msg = String(e?.message || e || '');
-              if (msg.includes('numRequiredSignatures') || msg.includes('message.header')) {
-                const converted: any[] = txs.map((tx) => {
-                  if (!tx?.feePayer || !tx?.recentBlockhash || !tx?.instructions) return tx;
-                  const compiled = new TransactionMessage({
-                    payerKey: tx.feePayer,
-                    recentBlockhash: tx.recentBlockhash,
-                    instructions: tx.instructions,
-                  }).compileToV0Message();
-                  return new VersionedTransaction(compiled);
-                });
-                return await (rawSignAll ? rawSignAll(converted) : Promise.all(converted.map(rawSignTx!)));
-              }
-              throw e;
-            }
-          }
-          // 简易回退：逐个签名
-          const out: any[] = [];
-          for (const tx of txs) out.push(await signTransaction(tx));
-          return out;
-        };
-
-        const sendTransaction = async (tx: any, conn: Connection, opts?: { skipPreflight?: boolean; preflightCommitment?: string }) => {
-          // 优先使用钱包原生的 signAndSendTransaction（通常处理 VersionedTransaction 更稳）
-          try {
-            if (provider.signAndSendTransaction) {
-              const res = await provider.signAndSendTransaction(tx, opts);
-              const sig = (res && (res.signature || res)) as any;
-              return typeof sig === 'string' ? sig : sig?.toString?.();
-            }
-          } catch (_) {
-            // 如果 signAndSendTransaction 失败，降级到本地 sendRaw
-          }
-
-          const signed = await signTransaction(tx);
-          const raw = typeof signed?.serialize === 'function' ? signed.serialize() : signed;
-          const signature = await conn.sendRawTransaction(raw, {
-            skipPreflight: opts?.skipPreflight ?? false,
-            preflightCommitment: (opts?.preflightCommitment as any) ?? 'confirmed',
-          } as any);
-          return signature;
-        };
-
-        return {
-          publicKey,
-          signTransaction,
-          signAllTransactions,
-          sendTransaction,
-        } as any; // wallet-like object compatible with common SDKs/Anchor
-      }
-    } catch (_e) {
-      // ignore and return null below
-    }
-    return null;
-  }, [solanaWalletAddress, connection]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'symbol') {
       // Uppercase and restrict to alphanumerics, max length 10
-      const next = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+      const next = (value as string).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
       setFormData(prev => ({ ...prev, symbol: next }));
       return;
     }
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value } as any));
   };
 
   const setImageFromFile = (file: File) => {
@@ -375,6 +290,37 @@ export const Launch: React.FC<LaunchProps> = () => {
                 {/* <p className="mt-2 text-xs text-white/50">Uppercase letters and numbers only.</p> */}
               </div>
 
+              {/* Token Type Selector */}
+              <div>
+                <label className="block text-white text-sm font-medium mb-3">
+                  Token Type
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="tokenType"
+                      value="meme"
+                      checked={formData.tokenType === 'meme'}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/30 focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className="ml-2 text-white text-sm">meme</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="tokenType"
+                      value="standard"
+                      checked={formData.tokenType === 'standard'}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/30 focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className="ml-2 text-white text-sm">standard</span>
+                  </label>
+                </div>
+              </div>
+
               {createStatus.message && (
                 <div className={`p-4 rounded-lg ${
                   createStatus.type === 'success' 
@@ -394,7 +340,7 @@ export const Launch: React.FC<LaunchProps> = () => {
                     name={formData.name}
                     symbol={formData.symbol}
                     file={(formData.image as unknown as File)}
-                    tokenType="meme"
+                    tokenType={formData.tokenType}
                     buttonTitle={isCreating ? 'Creating Token...' : 'Create Flipflop Token'}
                     buttonStyle={{
                       width: '100%',
@@ -421,7 +367,7 @@ export const Launch: React.FC<LaunchProps> = () => {
                       setIsCreating(false);
                       setCreateStatus({ type: 'success', message: `Token \"${formData.name}\" (${formData.symbol}) created successfully!` });
                       // Reset form
-                      setFormData({ name: '', symbol: '', image: null, imageUrl: '' });
+                      setFormData({ name: '', symbol: '', image: null, imageUrl: '', tokenType: 'meme' });
                       // Optionally, you can log data
                       console.log('Launch success:', data);
                     }}

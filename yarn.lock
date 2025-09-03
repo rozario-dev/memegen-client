@@ -859,7 +859,14 @@
     "@wallet-standard/features" "^1.1.0"
     eventemitter3 "^5.0.1"
 
-"@solana/wallet-adapter-react@^0.15.38":
+"@solana/wallet-adapter-phantom@^0.9.28":
+  version "0.9.28"
+  resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-phantom/-/wallet-adapter-phantom-0.9.28.tgz#306252eaafbfc6a1e9efe976e43f933eb87c8b80"
+  integrity sha512-g/hcuWwWjzo5l8I4vor9htniVhLxd/GhoVK52WSd0hy8IZ8/FBnV3u8ABVTheLqO13d0IVy+xTxoVBbDaMjLog==
+  dependencies:
+    "@solana/wallet-adapter-base" "^0.9.27"
+
+"@solana/wallet-adapter-react@^0.15.38", "@solana/wallet-adapter-react@^0.15.39":
   version "0.15.39"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-react/-/wallet-adapter-react-0.15.39.tgz#6e7a3df7b09afa4beea6b12384451cfb2aeb5976"
   integrity sha512-WXtlo88ith5m22qB+qiGw301/Zb9r5pYr4QdXWmlXnRNqwST5MGmJWhG+/RVrzc+OG7kSb3z1gkVNv+2X/Y0Gg==

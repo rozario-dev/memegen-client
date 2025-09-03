@@ -4,6 +4,10 @@ import './index.css'
 import { Router } from './components/Router.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { Buffer } from 'buffer'
+import { clusterApiUrl } from '@solana/web3.js'
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
 
 // Ensure Buffer is available in browser for libs that expect Node.js Buffer
 if (typeof window !== 'undefined' && !(window as any).Buffer) {
@@ -25,10 +29,18 @@ if (typeof window !== 'undefined') {
   }
 }
 
+const network: WalletAdapterNetwork = (import.meta.env.VITE_SOLANA_NETWORK === 'mainnet' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet)
+const endpoint = import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network === WalletAdapterNetwork.Mainnet ? 'mainnet-beta' : 'devnet')
+const wallets = [new PhantomWalletAdapter()]
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <Router />
-    </AuthProvider>
+    <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
+      <WalletProvider wallets={wallets}>
+        <AuthProvider>
+          <Router />
+        </AuthProvider>
+      </WalletProvider>
+    </ConnectionProvider>
   </StrictMode>,
 )
