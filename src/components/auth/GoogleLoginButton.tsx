@@ -7,7 +7,7 @@ interface GoogleLoginButtonProps {
 }
 
 export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ className = '' }) => {
-  const { login, logout, user, loading } = useAuth();
+  const { logout, user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
   const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -15,7 +15,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ className 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`

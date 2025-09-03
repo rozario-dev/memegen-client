@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LoginModal } from '../auth/LoginModal';
 import { useAuth } from '../../hooks/useAuth';
+import { formatAddress } from '../../utils/format';
 
 interface HeaderProps {
   className?: string;
@@ -114,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       
                       // If we have a Solana wallet address, use it
                       if (solanaWalletAddress) {
-                        return `${solanaWalletAddress.slice(0, 4)}...${solanaWalletAddress.slice(-4)}`;
+                      return formatAddress(solanaWalletAddress, 4, 4);
                       }
                       
                       // Check if this is a Solana user based on email pattern
@@ -124,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       
                       if (isSolanaUser) {
                         // For Solana users, show truncated user ID
-                        return `${user.id.slice(0, 4)}...${user.id.slice(-4)}`;
+                        return formatAddress(user.id, 4, 4);
                       } else {
                         // For regular users, show email
                         return user.email;

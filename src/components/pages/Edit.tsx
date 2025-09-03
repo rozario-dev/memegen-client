@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
-import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from '../../config/config';
+import { CREDIT_COSTS, type UserTierType } from '../../config/config';
 import { LoginModal } from '../auth/LoginModal';
-import type { ImageModifyRequest, DirectImageGenerationResponse } from '../../types/api';
+import type { ImageModifyRequest } from '../../types/api';
 import { ModelSelector } from '../forms/ModelSelector';
 
 interface EditHistory {

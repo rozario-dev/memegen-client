@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
-import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from '../../config/config';
+import { CREDIT_COSTS, type UserTierType } from '../../config/config';
 import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
 import { ModelSelector } from '../forms/ModelSelector';
 

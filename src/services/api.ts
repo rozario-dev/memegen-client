@@ -6,9 +6,6 @@ import type {
   ParameterOptions,
   QuotaResponse,
   UserProfile,
-  UsageHistory,
-  UsageStats,
-  HealthCheck,
   ApiError,
   DirectMultipleImageGenerationRequest,
   ImageModifyRequest,
@@ -231,7 +228,7 @@ class ApiService {
   // Solana authentication (using custom token approach)
   // Note: This method is no longer needed as we use custom token generation
   // Keeping for potential future backend integration
-  async authenticateWithSolana(publicKey: string, signature: string, message: string): Promise<{ token: string; user: UserProfile }> {
+  async authenticateWithSolana(_publicKey: string, _signature: string, _message: string): Promise<{ token: string; user: UserProfile }> {
     // This endpoint doesn't exist yet - would need backend implementation
     throw new Error('Solana backend authentication not implemented. Using custom token approach instead.');
   }

@@ -109,14 +109,11 @@ export interface ApiError {
 }
 
 // Image Generation Types
-export const UserTier = {
-  FREE: 'free',
-  DEV: 'dev',
-  PRO: 'pro',
-  MAX: 'max'
-} as const;
+import type { UserTier } from '../constants/userTier';
 
-export type UserTier = typeof UserTier[keyof typeof UserTier];
+// 删除这里原有的：
+// export const UserTier = { FREE:'free', DEV:'dev', PRO:'pro', MAX:'max' } as const;
+// export type UserTier = typeof UserTier[keyof typeof UserTier];
 
 export interface DirectMultipleImageGenerationRequest {
   user_input: string;
