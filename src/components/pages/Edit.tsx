@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { CREDIT_COSTS, type UserTierType } from '../../config/config';
 import { LoginModal } from '../auth/LoginModal';
 import type { ImageModifyRequest } from '../../types/api';
 import { ModelSelector } from '../forms/ModelSelector';
+import { useLocation } from 'react-router-dom';
 
 interface EditHistory {
   id: string;
@@ -17,6 +18,7 @@ interface EditHistory {
 export const Edit: React.FC = () => {
   const { quota, refreshQuota, isAuthenticated } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
   
   // State management
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -27,6 +29,23 @@ export const Edit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  // Accept image URL passed from other pages (e.g., History)
+  useEffect(() => {
+    const state = location.state as { imageUrl?: string } | null;
+    if (state?.imageUrl) {
+      const imageUrl = state.imageUrl;
+      setSelectedImage(imageUrl);
+      setEditHistory([{
+        id: 'original',
+        imageUrl,
+        prompt: 'Original Image',
+        timestamp: new Date(),
+        isOriginal: true
+      }]);
+      setError(null);
+    }
+  }, [location.state]);
 
   // Handle file upload
   const handleFileSelect = (file: File) => {

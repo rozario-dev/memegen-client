@@ -57,6 +57,10 @@ export const History: React.FC = () => {
     navigate('/launch', { state: { imageUrl } });
   };
 
+  const handleEditImage = (imageUrl: string) => {
+    navigate('/edit', { state: { imageUrl } });
+  };
+
   const renderHistoryItem = (record: HistoryRecord) => {
     const isGenerate = record.operation_type.includes('generate');
     const isModify = record.operation_type.includes('modify');
@@ -115,6 +119,16 @@ export const History: React.FC = () => {
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 Original Image
               </div>
+              {/* Edit button to open Edit page with this image */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditImage(record.seed_image!);
+                }}
+                className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                Edit
+              </button>
               {solanaWalletAddress && (
                 <button
                   onClick={(e) => {
@@ -143,6 +157,16 @@ export const History: React.FC = () => {
               <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 {image.model_name}
               </div>
+              {/* Edit button to open Edit page with this image */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditImage(image.image_url);
+                }}
+                className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                Edit
+              </button>
               {solanaWalletAddress && (
                 <button
                   onClick={(e) => {
