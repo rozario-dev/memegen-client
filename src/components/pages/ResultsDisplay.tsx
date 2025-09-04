@@ -25,12 +25,7 @@ interface ModifyState {
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ 
   result, 
   onRegenerate 
-}) => {
-  // Debug: 打印 result 对象
-  console.log('=== API 返回值调试信息 ===');
-  console.log('完整的 result 对象:', JSON.stringify(result, null, 2));
-  console.log('========================');
-  
+}) => {  
   const navigate = useNavigate();
   const { solanaWalletAddress } = useAuth();
   const [copied, setCopied] = useState(false);
@@ -92,7 +87,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         user_tier: modifyState.selectedTier
       };
 
-      console.log('[ResultsDisplay] /images/modify seed_images:', modifyRequest.seed_images);
+      // console.log('[ResultsDisplay] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
       setModifiedImages(prev => [...prev, response]);
       setModifyState({

@@ -21,7 +21,6 @@ export const Edit: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   
-  // State management
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<EditHistory[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
@@ -31,10 +30,10 @@ export const Edit: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [showReferenceImage, setShowReferenceImage] = useState(false);
-  // Reference images (up to 6)
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
-  const referenceInputRef = useRef<HTMLInputElement>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>('');
+
+  const referenceInputRef = useRef<HTMLInputElement>(null);
 
   // Accept image URL passed from other pages (e.g., History)
   useEffect(() => {
@@ -170,7 +169,7 @@ export const Edit: React.FC = () => {
         user_tier: selectedTier
       };
 
-      console.log('[Edit] /images/modify seed_images:', modifyRequest.seed_images);
+      // console.log('[Edit] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
       
       // Add to edit history
@@ -200,14 +199,14 @@ export const Edit: React.FC = () => {
   };
 
   // Revert to a specific history state
-  const revertToHistory = (targetId: string) => {
-    const targetIndex = editHistory.findIndex(item => item.id === targetId);
-    if (targetIndex !== -1) {
-      const newHistory = editHistory.slice(0, targetIndex + 1);
-      setEditHistory(newHistory);
-      setSelectedImage(newHistory[newHistory.length - 1].imageUrl);
-    }
-  };
+  // const revertToHistory = (targetId: string) => {
+  //   const targetIndex = editHistory.findIndex(item => item.id === targetId);
+  //   if (targetIndex !== -1) {
+  //     const newHistory = editHistory.slice(0, targetIndex + 1);
+  //     setEditHistory(newHistory);
+  //     setSelectedImage(newHistory[newHistory.length - 1].imageUrl);
+  //   }
+  // };
 
   return (
     <>
@@ -405,7 +404,7 @@ export const Edit: React.FC = () => {
                             {item.timestamp.toLocaleTimeString()}
                           </p>
                         </div>
-                        {!item.isOriginal && (
+                        {/* {!item.isOriginal && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -415,7 +414,7 @@ export const Edit: React.FC = () => {
                           >
                             Revert to this
                           </button>
-                        )}
+                        )} */}
                       </div>
                     ))}
                   </div>
@@ -475,7 +474,7 @@ export const Edit: React.FC = () => {
                     <button
                       onClick={handleModifyImage}
                       disabled={loading || !currentPrompt.trim()}
-                      className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                      className={`w-full py-3 px-4 rounded-lg font-medium transition-colors cursor-pointer ${
                         loading || !currentPrompt.trim()
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -501,7 +500,6 @@ export const Edit: React.FC = () => {
                   <li>• Upload an image to perform multiple rounds of AI modifications</li>
                   <li>• Each modification will be saved to the history</li>
                   <li>• Click on history items to return to previous versions</li>
-                  <li>• Use "Revert to this" to delete subsequent modifications</li>
                   <li>• The more specific the modification prompt, the better the result</li>
                 </ul>
               </div>

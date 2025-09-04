@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (addr) {
               setSolanaWalletAddress(addr);
               localStorage.setItem(SOLANA_WALLET_KEY, addr);
-              console.log('Solana wallet address stored:', addr);
+              // console.log('Solana wallet address stored:', addr);
             }
           } catch (error) {
             console.error('Failed to load user data after sign in:', error);

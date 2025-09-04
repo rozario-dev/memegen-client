@@ -22,7 +22,6 @@ export const History: React.FC = () => {
         setLoading(true);
         const offset = (currentPage - 1) * pageSize;
         const data = await apiService.getImageHistory(pageSize, offset);
-        console.log("data", data);
         setHistoryData(data);
         
         // 计算总页数

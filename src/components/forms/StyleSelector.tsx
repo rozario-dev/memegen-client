@@ -38,7 +38,7 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ onSelect, classNam
         <option value="">-- Choose a style --</option>
         {STYLES.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.name}{s.name_cn ? ` (${s.name_cn})` : ''}
+            {s.name}
           </option>
         ))}
       </select>

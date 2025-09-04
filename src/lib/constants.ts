@@ -129,7 +129,7 @@ export const STYLES = [
   },
   {
     "id": 12,
-    "name": "Figure Style",
+    "name": "Collectible Figure",
     "name_cn": "手办风格",
     "description": "Highly detailed collectible figure appearance with realistic textures, precise sculpting details, and premium finish quality"
   },

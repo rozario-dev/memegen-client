@@ -107,12 +107,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               ) : user ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
-                    {(() => {
-                      console.log('User object:', user);
-                      console.log('User email:', user.email);
-                      console.log('User id:', user.id);
-                      console.log('Solana wallet address:', solanaWalletAddress);
-                      
+                    {(() => {                      
                       // If we have a Solana wallet address, use it
                       if (solanaWalletAddress) {
                       return formatAddress(solanaWalletAddress, 4, 4);
