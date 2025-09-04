@@ -96,6 +96,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       console.log("===3===")
       // 某些环境下，connect() 刚结束时 publicKey 可能尚未同步到 hook，等待其就绪
       let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+      console.log("effectivePk", effectivePk)
       if (!effectivePk) {
         effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
       }

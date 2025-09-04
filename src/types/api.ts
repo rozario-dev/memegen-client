@@ -106,6 +106,7 @@ export type ImageFormat = typeof ImageFormat[keyof typeof ImageFormat];
 export interface ApiError {
   detail: string;
   status?: number;
+  message?: string;
 }
 
 // Image Generation Types

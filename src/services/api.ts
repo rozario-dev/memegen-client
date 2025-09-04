@@ -21,7 +21,7 @@ class ApiService {
   constructor() {
     this.api = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
-      timeout: 30000,
+      timeout: 180000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -57,11 +57,14 @@ class ApiService {
 
   private handleApiError(error: unknown): ApiError {
     if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { data?: { detail?: string }; status?: number } };
+      const axiosError = error as { response?: { data?: { message?: string; detail?: string; error?: boolean }; status?: number } };
       if (axiosError.response?.data) {
+        // 优先使用 message，然后是 detail
+        const errorMessage = axiosError.response.data.message || axiosError.response.data.detail || 'An error occurred';
         return {
-          detail: axiosError.response.data.detail || 'An error occurred',
+          detail: errorMessage,
           status: axiosError.response.status || 0,
+          message: errorMessage,
         };
       }
     }
@@ -71,6 +74,7 @@ class ApiService {
     return {
       detail: errorMessage,
       status: 0,
+      message: errorMessage
     };
   }
 
