@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiService } from '../services/api';
+import { apiService } from '../lib/api';
 import { supabase } from '../lib/supabase';
-import type { UserProfile, QuotaResponse } from '../types/api';
+import type { UserProfile, QuotaResponse } from '../lib/types';
 import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 import { useWallet } from '@solana/wallet-adapter-react';
 

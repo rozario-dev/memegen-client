@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { apiService } from '../../services/api';
-import { CREDIT_COSTS, type UserTierType } from '../../config/config';
-import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../types/api';
+import { apiService } from '../../lib/api';
+import { CREDIT_COSTS, type UserTierType } from '../../lib/constants';
+import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 
 interface ResultsDisplayProps {

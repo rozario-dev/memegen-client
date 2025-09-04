@@ -29,3 +29,5 @@ export const USER_TIER_DESCRIPTIONS: UserTierMap<string> = {
   pro: 'Professional tier, best quality',
   max: 'Top tier, ultimate quality',
 };
+
+export type { UserTier as UserTierType } from '../lib/constants';

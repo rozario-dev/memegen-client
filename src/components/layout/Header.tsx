@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LoginModal } from '../auth/LoginModal';
 import { useAuth } from '../../hooks/useAuth';
-import { formatAddress } from '../../utils/format';
+import { formatAddress } from '../../lib/format';
 
 interface HeaderProps {
   className?: string;

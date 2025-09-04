@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useParameterOptions } from '../../hooks/useParameterOptions';
-import { apiService } from '../../services/api';
+import { apiService } from '../../lib/api';
 import { LoginModal } from '../auth/LoginModal';
-import { CREDIT_COSTS, type UserTierType } from '../../config/config';
-import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../types/api';
+import { CREDIT_COSTS, type UserTierType } from '../../lib/constants';
+import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../lib/types';
 import { ModelSelector } from './ModelSelector';
 
 interface MemeGenerationFormProps {

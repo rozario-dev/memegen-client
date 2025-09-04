@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MemeGenerationForm } from '../forms/MemeGenerationForm';
-import { ResultsDisplay } from '../results/ResultsDisplay';
-import type { DirectImageGenerationResponse } from '../../types/api';
+import type { DirectImageGenerationResponse } from '../../lib/types';
+import { ResultsDisplay } from './ResultsDisplay';
 
 export const Create: React.FC = () => {
   const [generatedResult, setGeneratedResult] = useState<DirectImageGenerationResponse | null>(null);

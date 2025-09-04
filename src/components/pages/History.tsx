@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { apiService } from '../../services/api';
-import type { ImageHistoryResponse, HistoryRecord } from '../../types/api';
+import { apiService } from '../../lib/api';
+import type { ImageHistoryResponse, HistoryRecord } from '../../lib/types';
 
 export const History: React.FC = () => {
   const navigate = useNavigate();

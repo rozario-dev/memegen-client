@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { apiService } from '../../services/api';
-import { CREDIT_COSTS, type UserTierType } from '../../config/config';
+import { apiService } from '../../lib/api';
+import { CREDIT_COSTS, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
-import type { ImageModifyRequest } from '../../types/api';
+import type { ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { useLocation } from 'react-router-dom';
 
@@ -29,6 +29,9 @@ export const Edit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  // Reference images (up to 6)
+  const [referenceImages, setReferenceImages] = useState<string[]>([]);
+  const referenceInputRef = useRef<HTMLInputElement>(null);
 
   // Accept image URL passed from other pages (e.g., History)
   useEffect(() => {
@@ -43,6 +46,7 @@ export const Edit: React.FC = () => {
         timestamp: new Date(),
         isOriginal: true
       }]);
+      setReferenceImages([]);
       setError(null);
     }
   }, [location.state]);
@@ -65,6 +69,7 @@ export const Edit: React.FC = () => {
         timestamp: new Date(),
         isOriginal: true
       }]);
+      setReferenceImages([]);
       setError(null);
     };
     reader.readAsDataURL(file);
@@ -98,6 +103,40 @@ export const Edit: React.FC = () => {
     if (files && files[0]) {
       handleFileSelect(files[0]);
     }
+  };
+
+  // Reference images handlers
+  const handleReferenceAddClick = () => {
+    referenceInputRef.current?.click();
+  };
+
+  const handleReferenceFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const maxToAdd = 6 - referenceImages.length;
+    if (maxToAdd <= 0) return;
+    const selected = Array.from(files).slice(0, maxToAdd);
+
+    const readers = selected.map((file) => new Promise<string>((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve('');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => resolve(ev.target?.result as string);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    }));
+
+    Promise.all(readers).then((urls) => {
+      const valid = urls.filter(Boolean) as string[];
+      setReferenceImages((prev) => [...prev, ...valid].slice(0, 6));
+      if (referenceInputRef.current) referenceInputRef.current.value = '';
+    });
+  };
+
+  const handleRemoveReference = (index: number) => {
+    setReferenceImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Handle image modification
@@ -266,11 +305,12 @@ export const Edit: React.FC = () => {
                         setSelectedImage(null);
                         setEditHistory([]);
                         setCurrentPrompt('');
+                        setReferenceImages([]);
                         setError(null);
                       }}
-                      className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                      className="px-3 py-1 text-sm bg-red-500 text-white rounded cursor-pointer"
                     >
-                      Re-upload
+                      Clear
                     </button>
                   </div>
                   
@@ -279,6 +319,51 @@ export const Edit: React.FC = () => {
                       src={selectedImage}
                       alt="Selected image"
                       className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Reference Images Section */}
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-gray-900">Reference Images(Max 6)</h3>
+                      <span className="text-sm text-gray-500">{referenceImages.length}/6</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {referenceImages.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border">
+                          <img src={url} alt={`Reference ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveReference(idx)}
+                            className="absolute top-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded"
+                            aria-label="Remove"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+
+                      {referenceImages.length < 6 && (
+                        <button
+                          type="button"
+                          onClick={handleReferenceAddClick}
+                          className="aspect-square flex items-center justify-center rounded-lg border-2 border-dashed text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors bg-white"
+                        >
+                          <div className="text-center">
+                            <div className="text-2xl">＋</div>
+                            <div className="text-xs mt-1">Add</div>
+                          </div>
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      ref={referenceInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleReferenceFilesChange}
+                      className="hidden"
                     />
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation, Navigate } from 'react-router-dom';
-import { compressImage, formatAddress } from '../../utils/format';
+import { compressImage, formatAddress } from '../../lib/format';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 
 const LazyLaunchTokenButton = React.lazy(() => import('@flipflop-sdk/tools').then(m => ({ default: m.LaunchTokenButton })));

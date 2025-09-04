@@ -12,7 +12,7 @@ import type {
   ImageModifyResponse,
   DirectImageGenerationResponse,
   ImageHistoryResponse
-} from '../types/api';
+} from './types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -269,4 +269,4 @@ class ApiService {
 export const apiService = new ApiService();
 
 // Re-export types for convenience
-export * from '../types/api';
+export * from './types';

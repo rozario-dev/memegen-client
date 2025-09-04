@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from "../../config/config";
+import { CREDIT_COSTS, USER_TIER_LABELS, type UserTierType } from "../../lib/constants";
 
 export interface ModelSelectorProps {
     selectedTier: UserTierType;

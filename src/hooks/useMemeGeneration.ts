@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { apiService } from '../services/api';
-import type { PromptRequest, PromptResponse, TaskStatus } from '../types/api';
+import { apiService } from '../lib/api';
+import type { PromptRequest, PromptResponse, TaskStatus } from '../lib/types';
 
 interface GenerationState {
   loading: boolean;

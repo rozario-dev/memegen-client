@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import type { ParameterOptions } from '../types/api';
+import { apiService } from '../lib/api';
+import type { ParameterOptions } from '../lib/types';
 
 export const useParameterOptions = () => {
   const [options, setOptions] = useState<ParameterOptions | null>(null);

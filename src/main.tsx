@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { Router } from './components/Router.tsx'
+import { Router } from './contexts/Router.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { Buffer } from 'buffer'
 import { clusterApiUrl } from '@solana/web3.js'

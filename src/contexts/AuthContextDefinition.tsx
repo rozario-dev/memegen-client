@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { UserProfile, QuotaResponse } from '../types/api';
+import type { UserProfile, QuotaResponse } from '../lib/types';
 
 interface AuthContextType {
   user: UserProfile | null;

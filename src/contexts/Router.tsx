@@ -1,4 +1,4 @@
-import { AuthCallback } from './auth/AuthCallback';
+import { AuthCallback } from '../components/auth/AuthCallback';
 import App from '../App';
 
 export const Router: React.FC = () => {

@@ -110,7 +110,7 @@ export interface ApiError {
 }
 
 // Image Generation Types
-import type { UserTier } from '../constants/userTier';
+import type { UserTier } from './constants';
 
 // 删除这里原有的：
 // export const UserTier = { FREE:'free', DEV:'dev', PRO:'pro', MAX:'max' } as const;
