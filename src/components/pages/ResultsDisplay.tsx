@@ -5,6 +5,7 @@ import { apiService } from '../../lib/api';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
+import { StyleSelector } from '../forms/StyleSelector';
 
 interface ResultsDisplayProps {
   result: DirectImageGenerationResponse;
@@ -15,6 +16,7 @@ interface ModifyState {
   selectedImageUuid: string | null;
   selectedImageUrl: string | null;
   modifyPrompt: string;
+  selectedStyle: string;
   selectedTier: UserTierType;
   isModifying: boolean;
   error: string | null;
@@ -49,6 +51,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     selectedImageUuid: null,
     selectedImageUrl: null,
     modifyPrompt: '',
+    selectedStyle: '',
     selectedTier: DEFAULT_USER_TIER,
     isModifying: false,
     error: null
@@ -84,7 +87,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
     try {
       const modifyRequest: ImageModifyRequest = {
-        prompt: modifyState.modifyPrompt.trim(),
+        prompt: modifyState.modifyPrompt.trim() + ", " + modifyState.selectedStyle,
         seed_images: [modifyState.selectedImageUrl],
         user_tier: modifyState.selectedTier
       };
@@ -96,6 +99,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         selectedImageUuid: null,
         selectedImageUrl: null,
         modifyPrompt: '',
+        selectedStyle: '',
         selectedTier: DEFAULT_USER_TIER,
         isModifying: false,
         error: null
@@ -325,7 +329,17 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                       {modifyState.modifyPrompt.length}/500
                     </div>
                   </div>
-                  
+
+                  <StyleSelector
+                    label="Style Preset"
+                    onSelect={({ name, description }) => {
+                      setModifyState(prev => ({
+                        ...prev,
+                        selectedStyle: name + "(" + description + ")"
+                      }));
+                    }}
+                  />
+
                   {/* Tier Selection for Modification */}
                   <ModelSelector 
                     selectedTier={modifyState.selectedTier}

@@ -6,6 +6,7 @@ import { LoginModal } from '../auth/LoginModal';
 import type { ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { useLocation } from 'react-router-dom';
+import { StyleSelector } from '../forms/StyleSelector';
 
 interface EditHistory {
   id: string;
@@ -33,6 +34,7 @@ export const Edit: React.FC = () => {
   // Reference images (up to 6)
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const referenceInputRef = useRef<HTMLInputElement>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string>('');
 
   // Accept image URL passed from other pages (e.g., History)
   useEffect(() => {
@@ -163,7 +165,7 @@ export const Edit: React.FC = () => {
 
     try {
       const modifyRequest: ImageModifyRequest = {
-        prompt: currentPrompt.trim(),
+        prompt: currentPrompt.trim() + ", " + selectedStyle,
         seed_images: [selectedImage, ...referenceImages],
         user_tier: selectedTier
       };
@@ -446,6 +448,13 @@ export const Edit: React.FC = () => {
                         {currentPrompt.length}/200 characters
                       </p>
                     </div>
+
+                    <StyleSelector
+                      label="Style Preset"
+                      onSelect={({ name, description }) => {
+                        setSelectedStyle(name + "(" + description + ")");
+                      }}
+                    />
 
                     {/* Model selection */}
                     <ModelSelector

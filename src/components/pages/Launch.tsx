@@ -173,7 +173,9 @@ export const Launch: React.FC<LaunchProps> = () => {
 
   // Helper to determine if action should be disabled (require actual File per SDK)
   const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !wallet;
-
+  console.log(formData.name);
+  console.log(formData.image);
+  console.log(wallet);
   return (
     <div className="-mt-16 -mb-12 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-16 pb-20">
       <div className="max-w-5xl mx-auto">
