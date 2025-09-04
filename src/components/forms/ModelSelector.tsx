@@ -1,16 +1,18 @@
 import type { FC } from "react";
-import { CREDIT_COSTS, SUPPORT_MULTI_REFERENCE_IMAGES, TIER_CONFIT, USER_TIER_DESCRIPTIONS, USER_TIER_LABELS, type UserTierType } from "../../lib/constants";
+import { CREDIT_COSTS, SUPPORT_MULTI_REFERENCE_IMAGES, TIER_CONFIT, USER_TIER_DESCRIPTIONS, USER_TIER_DESCRIPTIONS_MODIFY, USER_TIER_LABELS, type UserTierType } from "../../lib/constants";
 
 export interface ModelSelectorProps {
     selectedTier: UserTierType;
     setSelectedTier: (tier: UserTierType) => void;
     setShowReferenceImage?: (bl: boolean) => void;
+    action: "create" | "modify";
 }
 
 export const ModelSelector: FC<ModelSelectorProps> = ({
     selectedTier,
     setSelectedTier,
-    setShowReferenceImage
+    setShowReferenceImage,
+    action,
 }) => {
     return(
         <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-6 rounded-xl border border-indigo-200 shadow-sm">
@@ -54,7 +56,7 @@ export const ModelSelector: FC<ModelSelectorProps> = ({
                     
                     {/* Tier description */}
                     <div className="text-xs text-gray-400 mt-1">
-                    {USER_TIER_DESCRIPTIONS[tier as UserTierType]}
+                    {action === "create" ? USER_TIER_DESCRIPTIONS[tier as UserTierType] : USER_TIER_DESCRIPTIONS_MODIFY[tier as UserTierType]}
                     </div>
 
                     {/* Credits */}

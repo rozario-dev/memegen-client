@@ -43,11 +43,11 @@ export const USER_TIER_DESCRIPTIONS: UserTierMap<string> = {
   // max: 'Ideogram 3.0',
 };
 
-// export const USER_TIER_DESCRIPTIONS_MODIFY: UserTierMap<string> = {
-//   free: 'FLUX.1 kontext dev',
-//   dev: 'Qwen Image Edit', // support multi reference images
-//   pro: 'Gemini Nano Banana', // support multi reference images
-// };
+export const USER_TIER_DESCRIPTIONS_MODIFY: UserTierMap<string> = {
+  free: 'FLUX.1 kontext dev',
+  dev: 'Qwen Image Edit', // support multi reference images
+  pro: 'Gemini Nano Banana', // support multi reference images
+};
 
 export const SUPPORT_MULTI_REFERENCE_IMAGES: UserTierMap<boolean> = {
   free: false,

@@ -452,6 +452,7 @@ export const Edit: React.FC = () => {
                       selectedTier={selectedTier}
                       setSelectedTier={setSelectedTier}
                       setShowReferenceImage={setShowReferenceImage}
+                      action='modify'
                     />
 
                     {/* Error message */}

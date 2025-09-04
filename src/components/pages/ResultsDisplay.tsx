@@ -330,6 +330,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   <ModelSelector 
                     selectedTier={modifyState.selectedTier}
                     setSelectedTier={(tier) => setModifyState(prev => ({ ...prev, selectedTier: tier }))}
+                    action='modify'
                   />
                   
                   {modifyState.error && (

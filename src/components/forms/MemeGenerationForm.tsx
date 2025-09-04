@@ -206,7 +206,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         </div>
 
         {/* Model Selection */}
-        <ModelSelector selectedTier={selectedTier} setSelectedTier={setSelectedTier} />
+        <ModelSelector selectedTier={selectedTier} setSelectedTier={setSelectedTier} action='create'/>
 
         {/* Submit Button */}
         <div className="relative">
