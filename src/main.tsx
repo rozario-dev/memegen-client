@@ -36,7 +36,7 @@ const wallets = [new PhantomWalletAdapter()]
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
-      <WalletProvider wallets={wallets}>
+      <WalletProvider wallets={wallets} autoConnect>
         <AuthProvider>
           <Router />
         </AuthProvider>

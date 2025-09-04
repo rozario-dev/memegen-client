@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation, Navigate } from 'react-router-dom';
 import { compressImage, formatAddress } from '../../lib/format';
-import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useAnchorWallet, useConnection, type AnchorWallet } from '@solana/wallet-adapter-react';
 
 const LazyLaunchTokenButton = React.lazy(() => import('@flipflop-sdk/tools').then(m => ({ default: m.LaunchTokenButton })));
 
@@ -75,6 +75,12 @@ export const Launch: React.FC<LaunchProps> = () => {
       })();
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (wallet) {
+      console.log("wallet", wallet);
+    }
+  }, [wallet])
 
   // Prepare Solana connection and wallet wrapper for LaunchTokenButton
   const network = useMemo(() => (
@@ -173,9 +179,7 @@ export const Launch: React.FC<LaunchProps> = () => {
 
   // Helper to determine if action should be disabled (require actual File per SDK)
   const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !wallet;
-  console.log(formData.name);
-  console.log(formData.image);
-  console.log(wallet);
+
   return (
     <div className="-mt-16 -mb-12 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-16 pb-20">
       <div className="max-w-5xl mx-auto">
@@ -337,7 +341,7 @@ export const Launch: React.FC<LaunchProps> = () => {
                 <Suspense fallback={<div className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-center">Loading launcher...</div>}>
                   <LazyLaunchTokenButton
                     network={network}
-                    wallet={wallet as any}
+                    wallet={wallet as AnchorWallet}
                     connection={connection}
                     name={formData.name}
                     symbol={formData.symbol}
