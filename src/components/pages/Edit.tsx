@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
-import { CREDIT_COSTS, type UserTierType } from '../../lib/constants';
+import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
 import type { ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
@@ -24,7 +24,7 @@ export const Edit: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<EditHistory[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
-  const [selectedTier, setSelectedTier] = useState<UserTierType>('pro');
+  const [selectedTier, setSelectedTier] = useState<UserTierType>(DEFAULT_USER_TIER);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -151,7 +151,7 @@ export const Edit: React.FC = () => {
       return;
     }
 
-    const requiredCredits = CREDIT_COSTS[selectedTier];
+    const requiredCredits = CREDIT_COSTS[selectedTier] as number;
     if (!quota || quota.remaining_quota < requiredCredits) {
       setShowLoginModal(true);
       return;
@@ -448,6 +448,7 @@ export const Edit: React.FC = () => {
                     <ModelSelector
                       selectedTier={selectedTier}
                       setSelectedTier={setSelectedTier}
+                      action='modify'
                     />
 
                     {/* Error message */}

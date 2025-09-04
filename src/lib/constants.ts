@@ -7,7 +7,7 @@ export const USER_TIERS = {
 
 export type UserTier = typeof USER_TIERS[keyof typeof USER_TIERS];
 
-type UserTierMap<T> = Record<UserTier, T>;
+type UserTierMap<T> = Partial<Record<UserTier, T>>;
 
 export const CREDIT_COSTS: UserTierMap<number> = {
   free: 1,
@@ -16,6 +16,13 @@ export const CREDIT_COSTS: UserTierMap<number> = {
   max: 40,
 };
 
+export const TIER_CONFIT: UserTierMap<string> = {
+  free: '🆓',
+  dev: '⚡', 
+  pro: '💎',
+  max: '🚀'
+}
+
 export const USER_TIER_LABELS: UserTierMap<string> = {
   free: 'Free',
   dev: 'Dev',
@@ -23,11 +30,23 @@ export const USER_TIER_LABELS: UserTierMap<string> = {
   max: 'Max',
 };
 
+export const USER_TIER_LABELS_MODIFY: UserTierMap<string> = {
+  dev: 'Dev',
+  pro: 'Pro',
+};
+
 export const USER_TIER_DESCRIPTIONS: UserTierMap<string> = {
-  free: 'Free tier, suitable for personal use',
-  dev: 'Developer tier, higher quality',
-  pro: 'Professional tier, best quality',
-  max: 'Top tier, ultimate quality',
+  free: 'FLUX.1 schnell dev',
+  dev: 'FLUX.1 krae dev,  Qwen Image, HiDream-I1',
+  pro: 'Gemini Nano Banana',
+  max: 'Ideogram 3.0',
+};
+
+export const USER_TIER_DESCRIPTIONS_MODIFY: UserTierMap<string> = {
+  dev: 'Qwen Image Edit', // support multi reference images
+  pro: 'Gemini Nano Banana', // support multi reference images
 };
 
 export type { UserTier as UserTierType } from '../lib/constants';
+
+export const DEFAULT_USER_TIER = USER_TIERS.DEV;

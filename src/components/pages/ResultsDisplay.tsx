@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
-import { CREDIT_COSTS, type UserTierType } from '../../lib/constants';
+import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 
@@ -49,7 +49,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     selectedImageUuid: null,
     selectedImageUrl: null,
     modifyPrompt: '',
-    selectedTier: 'pro',
+    selectedTier: DEFAULT_USER_TIER,
     isModifying: false,
     error: null
   });
@@ -95,7 +95,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         selectedImageUuid: null,
         selectedImageUrl: null,
         modifyPrompt: '',
-        selectedTier: 'pro',
+        selectedTier: DEFAULT_USER_TIER,
         isModifying: false,
         error: null
       });
@@ -282,7 +282,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </h3>
                 </div>
                 <button
-                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', selectedTier: 'pro', error: null }))}
+                  onClick={() => setModifyState(prev => ({ ...prev, selectedImageUuid: null, selectedImageUrl: null, modifyPrompt: '', selectedTier: DEFAULT_USER_TIER, error: null }))}
                   className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-110"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,7 +326,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </div>
                   
                   {/* Tier Selection for Modification */}
-                  <ModelSelector selectedTier={modifyState.selectedTier} setSelectedTier={(tier) => setModifyState(prev => ({ ...prev, selectedTier: tier }))} />
+                  <ModelSelector 
+                    selectedTier={modifyState.selectedTier}
+                    setSelectedTier={(tier) => setModifyState(prev => ({ ...prev, selectedTier: tier }))}
+                    action="modify"
+                  />
                   
                   {modifyState.error && (
                     <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
@@ -362,7 +366,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                         </svg>
                         <span>Modify Image</span>
                         <div className="ml-2 px-2 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
-                          {CREDIT_COSTS[modifyState.selectedTier]} credit{CREDIT_COSTS[modifyState.selectedTier] > 1 ? 's' : ''}
+                          {CREDIT_COSTS[modifyState.selectedTier]} credit{(CREDIT_COSTS[modifyState.selectedTier] as number) > 1 ? 's' : ''}
                         </div>
                       </div>
                     )}
