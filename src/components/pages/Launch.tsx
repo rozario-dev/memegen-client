@@ -27,10 +27,7 @@ export const Launch: React.FC<LaunchProps> = () => {
     tokenType: 'meme',
   });
   const [isCreating, setIsCreating] = useState(false);
-  const [createStatus, setCreateStatus] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
-  }>({ type: null, message: '' });
+  const [createStatus, setCreateStatus] = useState<{ type: 'success' | 'error' | null; message: string; tokenUrl?: string; tx?: string }>({ type: null, message: '' });
   const [dragActive, setDragActive] = useState(false);
 
   const wallet = useAnchorWallet();
@@ -75,12 +72,6 @@ export const Launch: React.FC<LaunchProps> = () => {
       })();
     }
   }, [location.state]);
-
-  useEffect(() => {
-    if (wallet) {
-      console.log("wallet", wallet);
-    }
-  }, [wallet])
 
   // Prepare Solana connection and wallet wrapper for LaunchTokenButton
   const network = useMemo(() => (
@@ -333,7 +324,32 @@ export const Launch: React.FC<LaunchProps> = () => {
                     ? 'bg-green-500/20 border border-green-500/30 text-green-300'
                     : 'bg-red-500/20 border border-red-500/30 text-red-300'
                 }`}>
-                  {createStatus.message}
+                  <div>{createStatus.message}</div>
+                  {createStatus.type === 'success' && (
+                    <div className="mt-2 flex gap-4">
+                      {createStatus.tokenUrl && (
+                        <a 
+                          href={createStatus.tokenUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-300 hover:text-blue-200 underline text-sm"
+                        >
+                          View Token
+                        </a>
+                      )}
+                      {/* https://explorer.solana.com/tx/2eu6g1oKor6TjZUMNjrTk1GeSKy5qVCma8BNSzB3FJc8DPzPn223zv23KF1z2Qx9cuA4J6kDzgCyMjpb9Jd71Wpu?cluster=devnet */}
+                      {createStatus.tx && (
+                        <a 
+                          href={`https://explorer.solana.com/tx/${createStatus.tx}${import.meta.env.VITE_SOLANA_NETWORK === 'devnet' && '?cluster=devnet'}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-300 hover:text-blue-200 underline text-sm"
+                        >
+                          View Transaction
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -371,11 +387,18 @@ export const Launch: React.FC<LaunchProps> = () => {
                     }}
                     onSuccess={(data: any) => {
                       setIsCreating(false);
-                      setCreateStatus({ type: 'success', message: `Token \"${formData.name}\" (${formData.symbol}) created successfully!` });
+                      const tokenUrl = data?.tokenUrl || '';
+                      const tx = data?.tx || '';
+                      
+                      setCreateStatus({ 
+                        type: 'success', 
+                        message: `Token "${formData.name}" (${formData.symbol}) created successfully!`,
+                        tokenUrl,
+                        tx
+                      });
                       // Reset form
-                      setFormData({ name: '', symbol: '', image: null, imageUrl: '', tokenType: 'meme' });
-                      // Optionally, you can log data
-                      console.log('Launch success:', data);
+                      // setFormData({ name: '', symbol: '', image: null, imageUrl: '', tokenType: 'meme' });
+                      // console.log('Launch success:', data);
                     }}
                     onError={(error: string) => {
                       setIsCreating(false);

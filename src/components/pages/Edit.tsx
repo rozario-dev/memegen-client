@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { AuthContext } from '../../contexts/AuthContextDefinition';
 import { apiService } from '../../lib/api';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
 import type { ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { StyleSelector } from '../forms/StyleSelector';
 
 interface EditHistory {
@@ -18,8 +19,10 @@ interface EditHistory {
 
 export const Edit: React.FC = () => {
   const { quota, refreshQuota, isAuthenticated } = useAuth();
+  const authContext = useContext(AuthContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<EditHistory[]>([]);
@@ -32,8 +35,11 @@ export const Edit: React.FC = () => {
   const [showReferenceImage, setShowReferenceImage] = useState(false);
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>('');
+  const [isImageHovered, setIsImageHovered] = useState(false);
 
   const referenceInputRef = useRef<HTMLInputElement>(null);
+  
+  const isSolanaLogin = !!authContext?.solanaWalletAddress;
 
   // Accept image URL passed from other pages (e.g., History)
   useEffect(() => {
@@ -198,15 +204,99 @@ export const Edit: React.FC = () => {
     setSelectedImage(historyItem.imageUrl);
   };
 
+  const HistoryImageItem: React.FC<{ item: EditHistory; index: number }> = ({ item, index }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    
+    return (
+      <div
+        className={`relative group cursor-pointer transition-colors ${
+          selectedImage === item.imageUrl
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-gray-200 hover:border-gray-300'
+        }`}
+        onClick={() => selectHistoryImage(item)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <img
+          src={item.imageUrl}
+          alt={`Edit ${index}`}
+          className="w-12 h-12 object-cover rounded"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {item.isOriginal ? 'Original Image' : item.prompt}
+          </p>
+          <p className="text-xs text-gray-500">
+            {item.timestamp.toLocaleTimeString()}
+          </p>
+        </div>
+        {isSolanaLogin && isHovered && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/launch', { state: { imageUrl: item.imageUrl } });
+            }}
+            className="absolute top-1 right-1 px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors z-10"
+          >
+            Create token
+          </button>
+        )}
+      </div>
+    );
+  };
+
   // Revert to a specific history state
   // const revertToHistory = (targetId: string) => {
   //   const targetIndex = editHistory.findIndex(item => item.id === targetId);
-  //   if (targetIndex !== -1) {
-  //     const newHistory = editHistory.slice(0, targetIndex + 1);
-  //     setEditHistory(newHistory);
-  //     setSelectedImage(newHistory[newHistory.length - 1].imageUrl);
-  //   }
+  //   if (targetIndex === -1) return;
+
+  //   const newHistory = editHistory.slice(0, targetIndex + 1);
+  //   setEditHistory(newHistory);
+  //   setSelectedImage(newHistory[newHistory.length - 1].imageUrl);
   // };
+
+  const HistoryItem: React.FC<{ item: EditHistory; index: number }> = ({ item, index }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    
+    return (
+      <div
+        className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+          selectedImage === item.imageUrl
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-gray-200 hover:border-gray-300'
+        }`}
+        onClick={() => selectHistoryImage(item)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <img
+          src={item.imageUrl}
+          alt={`Edit ${index}`}
+          className="w-12 h-12 object-cover rounded"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {item.isOriginal ? 'Original Image' : item.prompt}
+          </p>
+          <p className="text-xs text-gray-500">
+            {item.timestamp.toLocaleTimeString()}
+          </p>
+        </div>
+        {isSolanaLogin && isHovered && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/launch', { state: { imageUrl: item.imageUrl } });
+            }}
+            className="ml-auto px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors flex-shrink-0"
+          >
+            Create token
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -317,12 +407,26 @@ export const Edit: React.FC = () => {
                     </button>
                   </div>
                   
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <div 
+                    className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative"
+                    onMouseEnter={() => setIsImageHovered(true)}
+                    onMouseLeave={() => setIsImageHovered(false)}
+                  >
                     <img
                       src={selectedImage}
                       alt="Selected image"
                       className="w-full h-full object-cover"
                     />
+                    {isSolanaLogin && isImageHovered && (
+                      <button
+                        onClick={() => {
+                          navigate('/launch', { state: { imageUrl: selectedImage } });
+                        }}
+                        className="absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
+                      >
+                        Create token
+                      </button>
+                    )}
                   </div>
 
                   {/* Reference Images Section */}
