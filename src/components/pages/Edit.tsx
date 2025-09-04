@@ -29,6 +29,7 @@ export const Edit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showReferenceImage, setShowReferenceImage] = useState(false);
   // Reference images (up to 6)
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const referenceInputRef = useRef<HTMLInputElement>(null);
@@ -163,10 +164,11 @@ export const Edit: React.FC = () => {
     try {
       const modifyRequest: ImageModifyRequest = {
         prompt: currentPrompt.trim(),
-        seed_image: selectedImage,
+        seed_images: [selectedImage, ...referenceImages],
         user_tier: selectedTier
       };
 
+      console.log('[Edit] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
       
       // Add to edit history
@@ -323,6 +325,7 @@ export const Edit: React.FC = () => {
                   </div>
 
                   {/* Reference Images Section */}
+                  {showReferenceImage &&
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold text-gray-900">Reference Images(Max 6)</h3>
@@ -365,7 +368,7 @@ export const Edit: React.FC = () => {
                       onChange={handleReferenceFilesChange}
                       className="hidden"
                     />
-                  </div>
+                  </div>}
                 </div>
               )}
 
@@ -448,7 +451,7 @@ export const Edit: React.FC = () => {
                     <ModelSelector
                       selectedTier={selectedTier}
                       setSelectedTier={setSelectedTier}
-                      action='modify'
+                      setShowReferenceImage={setShowReferenceImage}
                     />
 
                     {/* Error message */}

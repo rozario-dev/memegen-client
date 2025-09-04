@@ -143,7 +143,7 @@ export interface DirectImageGenerationResponse {
 // 图片修改接口
 export interface ImageModifyRequest {
   prompt: string;
-  seed_image: string;
+  seed_images: string[];
   user_tier?: UserTier;
   strength?: number;
   aspect_ratio?: AspectRatio;
@@ -187,7 +187,7 @@ export interface HistoryRecord {
   aspect_ratio: string;
   image_format: string;
   strength: number | null;
-  seed_image: string | null;
+  seed_images: string[] | null;
   count: number;
   credits_consumed: number;
   remaining_credits: number;

@@ -204,6 +204,8 @@ class ApiService {
 
   async modifyImage(request: ImageModifyRequest): Promise<ImageModifyResponse> {
     try {
+      // Debug log for outgoing payload
+      console.log('[ApiService] POST /images/modify seed_images:', request.seed_images);
       const response = await this.api.post('/images/modify', request);
       return response.data.data || response.data;
     } catch (error) {

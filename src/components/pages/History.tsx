@@ -22,6 +22,7 @@ export const History: React.FC = () => {
         setLoading(true);
         const offset = (currentPage - 1) * pageSize;
         const data = await apiService.getImageHistory(pageSize, offset);
+        console.log("data", data);
         setHistoryData(data);
         
         // 计算总页数
@@ -108,22 +109,21 @@ export const History: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {isModify && record.seed_image && (
+          {/* {isModify && record.seed_images && record.seed_images.length > 0 && (
             <div className="relative group">
               <img
-                src={record.seed_image}
+                src={record.seed_images[0]}
                 alt="Original Image"
                 className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => setSelectedImage(record.seed_image!)}
+                onClick={() => setSelectedImage(record.seed_images![0])}
               />
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 Original Image
               </div>
-              {/* Edit button to open Edit page with this image */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEditImage(record.seed_image!);
+                  handleEditImage(record.seed_images![0]);
                 }}
                 className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100"
               >
@@ -133,7 +133,7 @@ export const History: React.FC = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCreateToken(record.seed_image!);
+                    handleCreateToken(record.seed_images![0]);
                   }}
                   className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100"
                 >
@@ -141,7 +141,7 @@ export const History: React.FC = () => {
                 </button>
               )}
             </div>
-          )}
+          )} */}
           
           {record.images && record.images.length > 0 && record.images.map((image, index) => (
             <div key={image.image_uuid} className="relative group">

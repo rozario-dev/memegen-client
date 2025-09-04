@@ -85,10 +85,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     try {
       const modifyRequest: ImageModifyRequest = {
         prompt: modifyState.modifyPrompt.trim(),
-        seed_image: modifyState.selectedImageUrl,
+        seed_images: [modifyState.selectedImageUrl],
         user_tier: modifyState.selectedTier
       };
 
+      console.log('[ResultsDisplay] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
       setModifiedImages(prev => [...prev, response]);
       setModifyState({
@@ -329,7 +330,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   <ModelSelector 
                     selectedTier={modifyState.selectedTier}
                     setSelectedTier={(tier) => setModifyState(prev => ({ ...prev, selectedTier: tier }))}
-                    action="modify"
                   />
                   
                   {modifyState.error && (

@@ -140,7 +140,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         </div>
 
         {/* Parameters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Image Count */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Number of Images</label>
@@ -173,7 +173,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
           </div>
 
           {/* Image Format */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Image Format</label>
             <select
               value={formData.image_format}
@@ -186,7 +186,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* Style Preference */}
           <div className='hidden'>
@@ -206,7 +206,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         </div>
 
         {/* Model Selection */}
-        <ModelSelector selectedTier={selectedTier} setSelectedTier={setSelectedTier} action='create' />
+        <ModelSelector selectedTier={selectedTier} setSelectedTier={setSelectedTier} />
 
         {/* Submit Button */}
         <div className="relative">
