@@ -60,14 +60,14 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   </svg>
                 </button>
               )}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 hidden md:block">
                 <img
                   src="/logo.svg"
                   alt="memeGen"
                   className="h-8 w-8"
                 />
               </div>
-              <div className="ml-3">
+              <div className="ml-3 hidden md:block">
                 <h1 className="text-xl font-bold text-gray-900">
                   memeGen
                 </h1>
