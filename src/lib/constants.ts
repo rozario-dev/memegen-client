@@ -57,6 +57,40 @@ export const SUPPORT_MULTI_REFERENCE_IMAGES: UserTierMap<boolean> = {
   // max: false,
 };
 
+export const TIER_CONFIG: UserTierMap<{
+  label: string;
+  icon: string;
+  credit: number;
+  descriptionGeneration: string;
+  descriptionModify: string;
+  supportMultiReferenceImages: boolean;
+}> = {
+  free: {
+    label: 'Free',
+    icon: '🆓',
+    credit: 1,
+    descriptionGeneration: 'FLUX.1 schnell dev',
+    descriptionModify: 'FLUX.1 schnell dev',
+    supportMultiReferenceImages: false,
+  },
+  dev: {
+    label: 'Dev',
+    icon: '⚡',
+    credit: 5,
+    descriptionGeneration: 'FLUX.1 krae dev,  Qwen Image, HiDream-I1',
+    descriptionModify: 'Qwen Image Edit',
+    supportMultiReferenceImages: false,
+  },
+  pro: {
+    label: 'Pro',
+    icon: '💎',
+    credit: 25,
+    descriptionGeneration: 'Gemini Nano Banana',
+    descriptionModify: 'Gemini Nano Banana',
+    supportMultiReferenceImages: true,
+  }
+}
+
 export type { UserTier as UserTierType } from '../lib/constants';
 
 export const DEFAULT_USER_TIER = USER_TIERS.DEV;
