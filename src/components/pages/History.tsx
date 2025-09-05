@@ -212,8 +212,8 @@ export const History: React.FC = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">📚 Generation History</h1>
-                <p className="text-gray-600">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">📚 History</h1>
+                <p className="text-gray-600 text-sm">
                   Total {historyData?.total_count || 0} records
                   {totalPages > 1 && (
                     <span className="ml-2">
