@@ -4,18 +4,10 @@ import { AuthContext } from '../../contexts/AuthContextDefinition';
 import { apiService } from '../../lib/api';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
-import type { ImageModifyRequest } from '../../lib/types';
+import type { ModifiedImage, ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StyleSelector } from '../forms/StyleSelector';
-
-interface EditHistory {
-  id: string;
-  imageUrl: string;
-  prompt: string;
-  timestamp: Date;
-  isOriginal?: boolean;
-}
 
 export const Edit: React.FC = () => {
   const { quota, refreshQuota, isAuthenticated } = useAuth();
@@ -25,7 +17,7 @@ export const Edit: React.FC = () => {
   const navigate = useNavigate();
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [editHistory, setEditHistory] = useState<EditHistory[]>([]);
+  const [editHistory, setEditHistory] = useState<ModifiedImage[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
   const [selectedTier, setSelectedTier] = useState<UserTierType>(DEFAULT_USER_TIER);
   const [loading, setLoading] = useState(false);
@@ -41,19 +33,25 @@ export const Edit: React.FC = () => {
   
   const isSolanaLogin = !!authContext?.solanaWalletAddress;
 
+  const _setEditHistory = (imageUrl: string) => {
+      setEditHistory([{
+        id: 'original',
+        imageUrl,
+        prompt: 'Original Image',
+        timestamp: new Date(),
+        isOriginal: true,
+        modelName: '',
+        createdAt: '',
+        userTier: '',
+      }]);
+  }
   // Accept image URL passed from other pages (e.g., History)
   useEffect(() => {
     const state = location.state as { imageUrl?: string } | null;
     if (state?.imageUrl) {
       const imageUrl = state.imageUrl;
       setSelectedImage(imageUrl);
-      setEditHistory([{
-        id: 'original',
-        imageUrl,
-        prompt: 'Original Image',
-        timestamp: new Date(),
-        isOriginal: true
-      }]);
+      _setEditHistory(imageUrl);
       setReferenceImages([]);
       setError(null);
     }
@@ -70,13 +68,7 @@ export const Edit: React.FC = () => {
     reader.onload = (e) => {
       const imageUrl = e.target?.result as string;
       setSelectedImage(imageUrl);
-      setEditHistory([{
-        id: 'original',
-        imageUrl,
-        prompt: 'Original Image',
-        timestamp: new Date(),
-        isOriginal: true
-      }]);
+      _setEditHistory(imageUrl);
       setReferenceImages([]);
       setError(null);
     };
@@ -175,13 +167,15 @@ export const Edit: React.FC = () => {
         user_tier: selectedTier
       };
 
-      // console.log('[Edit] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
-      
+      console.log('[Edit] /images/modify response:', response);
       // Add to edit history
-      const newEdit: EditHistory = {
+      const newEdit: ModifiedImage = {
         id: response.image_uuid,
         imageUrl: response.image_url,
+        modelName: response.model_name,
+        createdAt: response.created_at,
+        userTier: response.user_tier,
         prompt: currentPrompt,
         timestamp: new Date()
       };
@@ -200,102 +194,8 @@ export const Edit: React.FC = () => {
   };
 
   // Select history image
-  const selectHistoryImage = (historyItem: EditHistory) => {
+  const selectHistoryImage = (historyItem: ModifiedImage) => {
     setSelectedImage(historyItem.imageUrl);
-  };
-
-  const HistoryImageItem: React.FC<{ item: EditHistory; index: number }> = ({ item, index }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    
-    return (
-      <div
-        className={`relative group cursor-pointer transition-colors ${
-          selectedImage === item.imageUrl
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-200 hover:border-gray-300'
-        }`}
-        onClick={() => selectHistoryImage(item)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <img
-          src={item.imageUrl}
-          alt={`Edit ${index}`}
-          className="w-12 h-12 object-cover rounded"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            {item.isOriginal ? 'Original Image' : item.prompt}
-          </p>
-          <p className="text-xs text-gray-500">
-            {item.timestamp.toLocaleTimeString()}
-          </p>
-        </div>
-        {isSolanaLogin && isHovered && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate('/launch', { state: { imageUrl: item.imageUrl } });
-            }}
-            className="absolute top-1 right-1 px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors z-10"
-          >
-            Create token
-          </button>
-        )}
-      </div>
-    );
-  };
-
-  // Revert to a specific history state
-  // const revertToHistory = (targetId: string) => {
-  //   const targetIndex = editHistory.findIndex(item => item.id === targetId);
-  //   if (targetIndex === -1) return;
-
-  //   const newHistory = editHistory.slice(0, targetIndex + 1);
-  //   setEditHistory(newHistory);
-  //   setSelectedImage(newHistory[newHistory.length - 1].imageUrl);
-  // };
-
-  const HistoryItem: React.FC<{ item: EditHistory; index: number }> = ({ item, index }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    
-    return (
-      <div
-        className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-          selectedImage === item.imageUrl
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-200 hover:border-gray-300'
-        }`}
-        onClick={() => selectHistoryImage(item)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <img
-          src={item.imageUrl}
-          alt={`Edit ${index}`}
-          className="w-12 h-12 object-cover rounded"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            {item.isOriginal ? 'Original Image' : item.prompt}
-          </p>
-          <p className="text-xs text-gray-500">
-            {item.timestamp.toLocaleTimeString()}
-          </p>
-        </div>
-        {isSolanaLogin && isHovered && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate('/launch', { state: { imageUrl: item.imageUrl } });
-            }}
-            className="ml-auto px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors flex-shrink-0"
-          >
-            Create token
-          </button>
-        )}
-      </div>
-    );
   };
 
   return (
@@ -417,15 +317,27 @@ export const Edit: React.FC = () => {
                       alt="Selected image"
                       className="w-full h-full object-cover"
                     />
-                    {isSolanaLogin && isImageHovered && (
-                      <button
-                        onClick={() => {
-                          navigate('/launch', { state: { imageUrl: selectedImage } });
-                        }}
-                        className="absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
-                      >
-                        Create token
-                      </button>
+                    {isImageHovered && (
+                      <>
+                        <button
+                          onClick={() => {
+                            navigate('/launch', { state: { imageUrl: selectedImage } });
+                          }}
+                          className="absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
+                        >
+                          Create token
+                        </button>
+                        {selectedImage && selectedImage.startsWith('http') && (
+                          <button
+                            onClick={() => {
+                              window.open(selectedImage, '_blank');
+                            }}
+                            className="absolute top-2 right-2 px-3 py-1.5 bg-blue-600/90 text-white text-sm rounded-lg hover:bg-blue-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
+                          >
+                            View
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -433,8 +345,8 @@ export const Edit: React.FC = () => {
                   {showReferenceImage &&
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900">Reference Images(Max 6)</h3>
-                      <span className="text-sm text-gray-500">{referenceImages.length}/6</span>
+                      <h3 className="text-lg font-semibold text-gray-900">Reference Images(Max 3)</h3>
+                      <span className="text-sm text-gray-500">{referenceImages.length}/3</span>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       {referenceImages.map((url, idx) => (
@@ -451,7 +363,7 @@ export const Edit: React.FC = () => {
                         </div>
                       ))}
 
-                      {referenceImages.length < 6 && (
+                      {referenceImages.length < 3 && (
                         <button
                           type="button"
                           onClick={handleReferenceAddClick}
@@ -505,20 +417,12 @@ export const Edit: React.FC = () => {
                             {item.isOriginal ? 'Original Image' : item.prompt}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {item.timestamp.toLocaleTimeString()}
+                            {!item.isOriginal && ("By " + item.modelName)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {item.isOriginal ? item.timestamp.toLocaleTimeString() : item.createdAt}
                           </p>
                         </div>
-                        {/* {!item.isOriginal && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              revertToHistory(item.id);
-                            }}
-                            className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                          >
-                            Revert to this
-                          </button>
-                        )} */}
                       </div>
                     ))}
                   </div>
@@ -538,17 +442,17 @@ export const Edit: React.FC = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Modification Prompt
+                        Modification Prompt ({currentPrompt.length}/1000)
                       </label>
                       <textarea
                         value={currentPrompt}
                         onChange={(e) => setCurrentPrompt(e.target.value)}
-                        placeholder="Describe the modification you want, e.g.: Change background to night sky, add neon light effects"
+                        placeholder="Describe the modification you want, e.g.: Change background to night sky"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         rows={4}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        {currentPrompt.length}/200 characters
+                      <p className="text-xs text-red-500 mt-1">
+                        Please write prompt in English if you choose Free/Pro model.
                       </p>
                     </div>
 

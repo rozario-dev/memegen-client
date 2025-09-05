@@ -154,13 +154,19 @@ export interface ImageModifyRequest {
   seed?: number;
 }
 
-export interface ImageModifyResponse {
-  image_url: string;
-  image_uuid: string;
-  cost: number;
-  model_name: string;
-  seed: number;
-}
+// export interface ImageModifyResponse {
+//   aspect_ratio: AspectRatio;
+//   cfg_scale: number;
+//   created_at: string;
+//   credits_consumed: number;
+//   generation_time: number;
+
+//   image_url: string;
+//   image_uuid: string;
+//   cost: number;
+//   model_name: string;
+//   seed: number;
+// }
 
 // 图片历史记录相关类型
 export interface ImageItem {
@@ -175,6 +181,31 @@ export interface ImageItem {
   image_uuid: string;
   model_name: string;
   generation_time: number;
+  user_tier?: string;
+}
+
+// export interface ImageModifyResponse {
+//   aspect_ratio: AspectRatio;
+//   cfg_scale: number;
+//   created_at: string;
+//   credits_consumed: number;
+//   generation_time: number;
+//   image_url: string;
+//   image_uuid: string;
+//   cost: number;
+//   model_name: string;
+//   seed: number;
+// }
+
+export interface ModifiedImage {
+  id: string;
+  imageUrl: string;
+  prompt?: string;
+  timestamp: Date;
+  isOriginal?: boolean;
+  modelName?: string;
+  createdAt?: string;
+  userTier?: string;
 }
 
 export interface HistoryRecord {

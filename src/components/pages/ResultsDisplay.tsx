@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
-import type { DirectImageGenerationResponse, ImageModifyRequest, ImageModifyResponse } from '../../lib/types';
+import type { DirectImageGenerationResponse, ImageModifyRequest, ModifiedImage } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { StyleSelector } from '../forms/StyleSelector';
 
@@ -51,7 +51,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     isModifying: false,
     error: null
   });
-  const [modifiedImages, setModifiedImages] = useState<ImageModifyResponse[]>([]);
+  const [modifiedImages, setModifiedImages] = useState<ModifiedImage[]>([]);
 
   const handleCopy = async () => {
     try {
@@ -89,7 +89,16 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
       // console.log('[ResultsDisplay] /images/modify seed_images:', modifyRequest.seed_images);
       const response = await apiService.modifyImage(modifyRequest);
-      setModifiedImages(prev => [...prev, response]);
+      const newModifiedImage: ModifiedImage = {
+        id: response.image_uuid,
+        imageUrl: response.image_url,
+        modelName: response.model_name || 'Modified Image',
+        createdAt: response.created_at || new Date().toISOString(),
+        userTier: response.user_tier || modifyState.selectedTier,
+        prompt: modifyState.modifyPrompt,
+        timestamp: new Date()
+      };
+      setModifiedImages(prev => [...prev, newModifiedImage]);
       setModifyState({
         selectedImageUuid: null,
         selectedImageUrl: null,
@@ -116,10 +125,10 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   }));
   
   const modifiedImagesList = modifiedImages.map(img => ({
-    image_uuid: img.image_uuid,
-    image_url: img.image_url,
+    image_uuid: img.id,
+    image_url: img.imageUrl,
     isModified: true,
-    model_name: 'Modified Image' // Default for modified images
+    model_name: img.modelName
   }));
   
   const allImages = [...originalImages, ...modifiedImagesList];
@@ -211,9 +220,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <div className="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
                         <p className="text-sm font-medium text-gray-800">Click to modify with AI</p>
-                        {imageResult.model_name && (
+                        {/* {imageResult.model_name && (
                           <p className="text-xs text-gray-600 mt-1">Model: {imageResult.model_name}</p>
-                        )}
+                        )} */}
                       </div>
                     </div>
                     {/* Action Buttons */}
@@ -225,12 +234,13 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             e.stopPropagation();
                             handleCreateToken(imageResult.image_url);
                           }}
-                          className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-pink-600 hover:scale-110 transition-all duration-300"
-                          title="Create token with this image"
+                          className="p-2 bg-gradient-to-r text-sm cursor-pointer from-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:from-purple-600 hover:to-pink-600 hover:scale-110 transition-all duration-300"
+                          title="Create token"
                         >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          Create Token
+                          {/* <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                          </svg>
+                          </svg> */}
                         </button>
                       )}
                       
@@ -272,11 +282,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             <div className="mt-8 p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-xl">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  {/* <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                     </svg>
-                  </div>
+                  </div> */}
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     🎨 Modify Selected Image
                   </h3>

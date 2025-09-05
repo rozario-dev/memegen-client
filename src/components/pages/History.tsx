@@ -100,7 +100,7 @@ export const History: React.FC = () => {
             </p>
           )}
           <div className="flex gap-4 text-sm text-gray-600">
-            <span><strong>Model:</strong> {record.user_tier}</span>
+            <span><strong>Tier:</strong> {record.user_tier}</span>
             <span><strong>Format:</strong> {record.image_format}</span>
             <span><strong>Image Ratio:</strong> {record.aspect_ratio}</span>
             {record.generation_time && <span><strong>Generation Time:</strong> {record.generation_time.toFixed(2)}s</span>}
@@ -146,37 +146,33 @@ export const History: React.FC = () => {
             <div key={image.image_uuid} className="relative group">
               <img
                 src={image.image_url}
-                alt={isModify ? 'Modified Image' : `Generated Image ${index + 1}`}
+                alt={isModify ? '' : `#${index + 1} ${image.model_name}`}
                 className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedImage(image.image_url)}
               />
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                {isModify ? 'Modified Image' : `Generated Image ${index + 1}`}
-              </div>
-              <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+              <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded transition-colors opacity-0 group-hover:opacity-100 z-10">
                 {image.model_name}
               </div>
-              {/* Edit button to open Edit page with this image */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditImage(image.image_url);
-                }}
-                className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100"
-              >
-                Edit
-              </button>
               {solanaWalletAddress && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCreateToken(image.image_url);
                   }}
-                  className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100 z-10"
                 >
                   Create token
                 </button>
               )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditImage(image.image_url);
+                }}
+                className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100 z-10"
+              >
+                Edit
+              </button>
             </div>
           ))}
         </div>

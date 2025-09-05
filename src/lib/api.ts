@@ -9,9 +9,9 @@ import type {
   ApiError,
   DirectMultipleImageGenerationRequest,
   ImageModifyRequest,
-  ImageModifyResponse,
   DirectImageGenerationResponse,
-  ImageHistoryResponse
+  ImageHistoryResponse,
+  ImageItem
 } from './types';
 
 class ApiService {
@@ -202,7 +202,7 @@ class ApiService {
     return response.data;
   }
 
-  async modifyImage(request: ImageModifyRequest): Promise<ImageModifyResponse> {
+  async modifyImage(request: ImageModifyRequest): Promise<ImageItem> {
     try {
       // Debug log for outgoing payload
       // console.log('[ApiService] POST /images/modify seed_images:', request.seed_images);

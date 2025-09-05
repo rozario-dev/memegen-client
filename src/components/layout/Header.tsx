@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      logout();
     } catch (error) {
       console.error('Logout error:', error);
     }
