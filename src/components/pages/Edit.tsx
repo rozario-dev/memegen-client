@@ -308,14 +308,14 @@ export const Edit: React.FC = () => {
                   </div>
                   
                   <div 
-                    className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative"
+                    className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative group"
                     onMouseEnter={() => setIsImageHovered(true)}
                     onMouseLeave={() => setIsImageHovered(false)}
                   >
                     <img
                       src={selectedImage}
                       alt="Selected image"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     {isImageHovered && (
                       <>

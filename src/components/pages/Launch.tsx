@@ -224,7 +224,7 @@ export const Launch: React.FC<LaunchProps> = () => {
                     <img
                       src={formData.imageUrl}
                       alt="Token preview"
-                      className="w-full aspect-square object-cover"
+                      className="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
                     <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
