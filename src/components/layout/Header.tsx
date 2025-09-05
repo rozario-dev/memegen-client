@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         : 'text-gray-700 hover:text-gray-900'
                     }`}
                   >
-                    🚀 Launch
+                    🚀 Web3 Launch
                   </Link>
                 )}
               </nav>
@@ -230,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
-                  🚀 Launch
+                  🚀 Web3 Launch
                 </Link>
               )}
             </div>
