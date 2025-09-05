@@ -39,7 +39,6 @@ function App() {
   const handleInstallClick = async () => {
     if (!deferredPrompt) return setShowInstallBanner(false);
     deferredPrompt.prompt();
-    const choiceResult = await deferredPrompt.userChoice;
     setDeferredPrompt(null);
     setShowInstallBanner(false);
   };

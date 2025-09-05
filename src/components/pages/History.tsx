@@ -143,7 +143,7 @@ export const History: React.FC = () => {
           )} */}
           
           {record.images && record.images.length > 0 && record.images.map((image, index) => (
-            <div key={image.image_uuid} className="relative group">
+            <div key={image.image_uuid + '_' + index} className="relative group">
               <img
                 src={image.image_url}
                 className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
