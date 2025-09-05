@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
-import { CREDIT_COSTS, DEFAULT_USER_TIER, MAX_REFERENCE_IMAGES, type UserTierType } from '../../lib/constants';
+import { TIER_CONFIG, DEFAULT_USER_TIER, MAX_REFERENCE_IMAGES } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
-import type { ModifiedImage, ImageModifyRequest } from '../../lib/types';
+import type { ModifiedImage, ImageModifyRequest, UserTierType } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StyleSelector } from '../forms/StyleSelector';
@@ -14,7 +14,8 @@ export const Edit: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  
+  const { solanaWalletAddress } = useAuth();
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<ModifiedImage[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState('');
@@ -148,7 +149,7 @@ export const Edit: React.FC = () => {
       return;
     }
 
-    const requiredCredits = CREDIT_COSTS[selectedTier] as number;
+    const requiredCredits = TIER_CONFIG[selectedTier]?.credit as number;
     if (!quota || quota.remaining_quota < requiredCredits) {
       setShowLoginModal(true);
       return;
@@ -314,14 +315,14 @@ export const Edit: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     {/* Mobile: always show Create token */}
-                    <button
+                    {solanaWalletAddress && <button
                       onClick={() => {
                         navigate('/launch', { state: { imageUrl: selectedImage } });
                       }}
                       className="sm:hidden absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
                     >
                       Create token
-                    </button>
+                    </button>}
                     {selectedImage && selectedImage.startsWith('http') && (
                       <button
                         onClick={() => {
@@ -334,14 +335,14 @@ export const Edit: React.FC = () => {
                     )}
                     {isImageHovered && (
                       <>
-                        <button
+                        {solanaWalletAddress && <button
                           onClick={() => {
                             navigate('/launch', { state: { imageUrl: selectedImage } });
                           }}
                           className="absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
                         >
                           Create token
-                        </button>
+                        </button>}
                         {selectedImage && selectedImage.startsWith('http') && (
                           <button
                             onClick={() => {

@@ -1,4 +1,17 @@
-import type { UserTier } from './constants';
+import type { USER_TIERS } from "./constants";
+
+export type UserTierMap<T> = Partial<Record<UserTierType, T>>;
+
+export type TierConfig = {
+  label: string;
+  icon: string;
+  credit: number;
+  descriptionGeneration: string;
+  descriptionModify: string;
+  supportMultiReferenceImages: boolean;
+}
+
+export type UserTierType = typeof USER_TIERS[keyof typeof USER_TIERS];
 
 export interface PromptRequest {
   user_input: string;
@@ -114,7 +127,7 @@ export interface ApiError {
 
 export interface DirectMultipleImageGenerationRequest {
   user_input: string;
-  user_tier?: UserTier;
+  user_tier?: UserTierType;
   count?: number;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;
@@ -139,7 +152,7 @@ export interface DirectImageGenerationResponse {
 export interface ImageModifyRequest {
   prompt: string;
   seed_images: string[];
-  user_tier?: UserTier;
+  user_tier?: UserTierType;
   strength?: number;
   aspect_ratio?: AspectRatio;
   image_format?: ImageFormat;

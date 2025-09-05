@@ -3,8 +3,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useParameterOptions } from '../../hooks/useParameterOptions';
 import { apiService } from '../../lib/api';
 import { LoginModal } from '../auth/LoginModal';
-import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
-import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../lib/types';
+import { TIER_CONFIG, DEFAULT_USER_TIER } from '../../lib/constants';
+import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest, UserTierType } from '../../lib/types';
 import { ModelSelector } from './ModelSelector';
 import { Loading } from './Loading';
 
@@ -56,7 +56,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
 
     // Check quota for authenticated users
     const imageCount = formData.count || 1;
-    const requiredCredits = (CREDIT_COSTS[selectedTier] as number) * imageCount;
+    const requiredCredits = (TIER_CONFIG[selectedTier]?.credit as number) * imageCount;
     if (!quota || quota.remaining_quota < requiredCredits) {
       setShowLoginModal(true);
       return;
@@ -213,15 +213,15 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         <div className="relative">
           <button
             type="submit"
-            disabled={loading || charCount === 0 || (quota != null && quota.remaining_quota < (CREDIT_COSTS[selectedTier] as number))}
+            disabled={loading || charCount === 0 || (quota != null && quota.remaining_quota < (TIER_CONFIG[selectedTier]?.credit as number))}
             className={`group relative w-full py-5 px-8 rounded-xl font-bold text-lg transition-all duration-300 overflow-hidden ${
-              loading || charCount === 0 || (quota && quota.remaining_quota < (CREDIT_COSTS[selectedTier] as number))
+              loading || charCount === 0 || (quota && quota.remaining_quota < (TIER_CONFIG[selectedTier]?.credit as number))
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transform hover:scale-105 shadow-xl hover:shadow-2xl cursor-pointer'
             }`}
           >
             {/* Animated background */}
-            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= (CREDIT_COSTS[selectedTier] as number)) && (
+            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= (TIER_CONFIG[selectedTier]?.credit as number)) && (
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             )}
             
@@ -240,25 +240,25 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
                   <span className="text-2xl mr-3">🎨</span>
                   <span>Generate{formData.count && formData.count > 1 ? 's' : ''}</span>
                   <div className="ml-3 px-3 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
-                    {((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1))} credit{((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1)) > 1 ? 's' : ''}
+                    {((TIER_CONFIG[selectedTier]?.credit as number) * (formData.count || 1))} credit{((TIER_CONFIG[selectedTier]?.credit as number) * (formData.count || 1)) > 1 ? 's' : ''}
                   </div>
                 </>
               )}
             </div>
             
             {/* Shine effect */}
-            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= ((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1))) && (
+            {!loading && charCount > 0 && (!quota || quota.remaining_quota >= ((TIER_CONFIG[selectedTier]?.credit as number) * (formData.count || 1))) && (
               <div className="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 transform -skew-x-12 group-hover:animate-pulse"></div>
             )}
           </button>
           
           {/* Credit warning */}
-          {quota && quota.remaining_quota < ((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1)) && (
+          {quota && quota.remaining_quota < ((TIER_CONFIG[selectedTier]?.credit as number) * (formData.count || 1)) && (
             <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center">
                 <span className="text-red-500 mr-2">⚠️</span>
                 <span className="text-sm text-red-700">
-                  Insufficient credits. You need {((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1))} credits but only have {quota.remaining_quota}.
+                  Insufficient credits. You need {((TIER_CONFIG[selectedTier]?.credit as number) * (formData.count || 1))} credits but only have {quota.remaining_quota}.
                 </span>
               </div>
             </div>

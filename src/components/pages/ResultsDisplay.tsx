@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
-import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
-import type { DirectImageGenerationResponse, ImageModifyRequest, ModifiedImage } from '../../lib/types';
+import { TIER_CONFIG, DEFAULT_USER_TIER } from '../../lib/constants';
+import type { DirectImageGenerationResponse, ImageModifyRequest, ModifiedImage, UserTierType } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { StyleSelector } from '../forms/StyleSelector';
 
@@ -386,7 +386,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                         </svg>
                         <span>Modify Image</span>
                         <div className="ml-2 px-2 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
-                          {CREDIT_COSTS[modifyState.selectedTier]} credit{(CREDIT_COSTS[modifyState.selectedTier] as number) > 1 ? 's' : ''}
+                          {TIER_CONFIG[modifyState.selectedTier]?.credit} credit{(TIER_CONFIG[modifyState.selectedTier]?.credit as number) > 1 ? 's' : ''}
                         </div>
                       </div>
                     )}
