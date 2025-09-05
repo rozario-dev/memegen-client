@@ -1,3 +1,4 @@
+export const MAX_REFERENCE_IMAGES = 2;
 export const USER_TIERS = {
   FREE: 'free',
   DEV: 'dev',

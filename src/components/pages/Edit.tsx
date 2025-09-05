@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../lib/api';
-import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
+import { CREDIT_COSTS, DEFAULT_USER_TIER, MAX_REFERENCE_IMAGES, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
 import type { ModifiedImage, ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
@@ -360,8 +360,8 @@ export const Edit: React.FC = () => {
                   {showReferenceImage &&
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900">Reference Images(Max 3)</h3>
-                      <span className="text-sm text-gray-500">{referenceImages.length}/3</span>
+                      <h3 className="text-lg font-semibold text-gray-900">{`Reference Images(Max ${MAX_REFERENCE_IMAGES})`}</h3>
+                      <span className="text-sm text-gray-500">{referenceImages.length}/{MAX_REFERENCE_IMAGES}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       {referenceImages.map((url, idx) => (
@@ -378,7 +378,7 @@ export const Edit: React.FC = () => {
                         </div>
                       ))}
 
-                      {referenceImages.length < 3 && (
+                      {referenceImages.length < MAX_REFERENCE_IMAGES && (
                         <button
                           type="button"
                           onClick={handleReferenceAddClick}
