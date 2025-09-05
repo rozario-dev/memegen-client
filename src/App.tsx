@@ -32,7 +32,7 @@ function App() {
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 transition-colors duration-300">
           <Header />
           
-          <main className="pt-16 pb-12">
+          <main className="md:pt-16 pt-0 pb-12">
             {/* Routes */}
             <Routes>
               <Route path="/" element={<Navigate to="/create" replace />} />

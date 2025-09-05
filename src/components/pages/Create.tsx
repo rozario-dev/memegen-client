@@ -17,7 +17,7 @@ export const Create: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 px-3">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             🚀 Create Your
@@ -26,18 +26,18 @@ export const Create: React.FC = () => {
             </span>
           </h1>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Generate professional AI prompts for meme image logos with just a few clicks.
+            Generate professional images with just a few clicks.
             Powered by advanced AI and optimized for Solana blockchain.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <span className="text-green-500">✓</span>
-              <span>AI-optimized prompts</span>
+              <span>Nano banana, Qwen Image, FLUX.1</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <span className="text-green-500">✓</span>
-              <span>Solana-ready</span>
+              <span>Solana blockchain supported</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <span className="text-green-500">✓</span>
@@ -47,7 +47,7 @@ export const Create: React.FC = () => {
         </div>
       </section>
 
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8 px-3">
         <div className="max-w-4xl mx-auto">
         {generatedResult ? (
           <ResultsDisplay
@@ -56,10 +56,7 @@ export const Create: React.FC = () => {
           />
         ) : (
           <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                🎨 Generate Your Meme Image Prompt
-              </h2>
+            <div className="bg-white rounded-lg shadow-lg md:p-6">
               <MemeGenerationForm onGenerated={handleGenerated} />
             </div>
           </div>

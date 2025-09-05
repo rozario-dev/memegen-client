@@ -63,7 +63,7 @@ export const History: React.FC = () => {
 
   const renderHistoryItem = (record: HistoryRecord) => {
     const isGenerate = record.operation_type.includes('generate');
-    const isModify = record.operation_type.includes('modify');
+    // const isModify = record.operation_type.includes('modify');
 
     return (
       <div key={record.id} className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -101,7 +101,7 @@ export const History: React.FC = () => {
           )}
           <div className="flex gap-4 text-sm text-gray-600">
             <span><strong>Tier:</strong> {record.user_tier}</span>
-            <span><strong>Format:</strong> {record.image_format}</span>
+            {/* <span><strong>Format:</strong> {record.image_format}</span> */}
             <span><strong>Image Ratio:</strong> {record.aspect_ratio}</span>
             {record.generation_time && <span><strong>Generation Time:</strong> {record.generation_time.toFixed(2)}s</span>}
           </div>
@@ -146,11 +146,15 @@ export const History: React.FC = () => {
             <div key={image.image_uuid} className="relative group">
               <img
                 src={image.image_url}
-                alt={isModify ? '' : `#${index + 1} ${image.model_name}`}
                 className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedImage(image.image_url)}
               />
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded transition-colors opacity-0 group-hover:opacity-100 z-10">
+              {/* Desktop: show on hover */}
+              <div className="hidden sm:block absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded transition-colors sm:opacity-0 sm:group-hover:opacity-100 z-10">
+                {image.model_name}
+              </div>
+              {/* Mobile: always show label in same position/style */}
+              <div className="sm:hidden absolute bottom-22 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded z-10">
                 {image.model_name}
               </div>
               {solanaWalletAddress && (
@@ -159,7 +163,7 @@ export const History: React.FC = () => {
                     e.stopPropagation();
                     handleCreateToken(image.image_url);
                   }}
-                  className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-purple-700 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                  className="hidden sm:block absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-purple-700 transition-colors sm:opacity-0 sm:group-hover:opacity-100 z-10"
                 >
                   Create token
                 </button>
@@ -169,10 +173,36 @@ export const History: React.FC = () => {
                   e.stopPropagation();
                   handleEditImage(image.image_url);
                 }}
-                className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                className="hidden sm:block absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-blue-700 transition-colors sm:opacity-0 sm:group-hover:opacity-100 z-10"
               >
                 Edit
               </button>
+
+              {/* Mobile: place actions below image, remove View */}
+              <div className="sm:hidden mt-2">
+                {solanaWalletAddress && (
+                  <div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateToken(image.image_url);
+                      }}
+                      className="w-full bg-purple-600 text-white text-xs py-2.5 rounded-md active:scale-[.99]"
+                    >
+                      Create token
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditImage(image.image_url);
+                      }}
+                      className="mt-1 w-full bg-blue-600 text-white text-xs py-2.5 rounded-md active:scale-[.99]"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -182,7 +212,7 @@ export const History: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="pt-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
@@ -194,7 +224,7 @@ export const History: React.FC = () => {
 
   if (error) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="pt-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h3 className="text-lg font-medium text-red-800 mb-2">Load error</h3>
@@ -207,7 +237,7 @@ export const History: React.FC = () => {
 
   return (
     <>
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="pt-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
@@ -317,7 +347,7 @@ export const History: React.FC = () => {
           <div className="relative max-w-4xl max-h-full">
             <img
               src={selectedImage}
-              alt="放大图片"
+              alt="zoom out"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
             <button

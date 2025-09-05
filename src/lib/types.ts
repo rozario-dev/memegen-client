@@ -1,3 +1,5 @@
+import type { UserTier } from './constants';
+
 export interface PromptRequest {
   user_input: string;
   aspect_ratio: AspectRatio;
@@ -109,12 +111,6 @@ export interface ApiError {
   message?: string;
 }
 
-// Image Generation Types
-import type { UserTier } from './constants';
-
-// 删除这里原有的：
-// export const UserTier = { FREE:'free', DEV:'dev', PRO:'pro', MAX:'max' } as const;
-// export type UserTier = typeof UserTier[keyof typeof UserTier];
 
 export interface DirectMultipleImageGenerationRequest {
   user_input: string;
@@ -140,7 +136,6 @@ export interface DirectImageGenerationResponse {
   remaining_credits: number;
 }
 
-// 图片修改接口
 export interface ImageModifyRequest {
   prompt: string;
   seed_images: string[];
@@ -154,21 +149,6 @@ export interface ImageModifyRequest {
   seed?: number;
 }
 
-// export interface ImageModifyResponse {
-//   aspect_ratio: AspectRatio;
-//   cfg_scale: number;
-//   created_at: string;
-//   credits_consumed: number;
-//   generation_time: number;
-
-//   image_url: string;
-//   image_uuid: string;
-//   cost: number;
-//   model_name: string;
-//   seed: number;
-// }
-
-// 图片历史记录相关类型
 export interface ImageItem {
   seed: number;
   model: string;
@@ -183,19 +163,6 @@ export interface ImageItem {
   generation_time: number;
   user_tier?: string;
 }
-
-// export interface ImageModifyResponse {
-//   aspect_ratio: AspectRatio;
-//   cfg_scale: number;
-//   created_at: string;
-//   credits_consumed: number;
-//   generation_time: number;
-//   image_url: string;
-//   image_uuid: string;
-//   cost: number;
-//   model_name: string;
-//   seed: number;
-// }
 
 export interface ModifiedImage {
   id: string;

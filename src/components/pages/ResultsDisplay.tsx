@@ -134,19 +134,19 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   const allImages = [...originalImages, ...modifiedImagesList];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto md:p-6">
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-6">
           <div className="flex items-center space-x-3">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <h2 className="text-3xl font-bold text-white">Generated Meme Images</h2>
+            <h2 className="text-3xl font-bold text-white">Generated Images</h2>
           </div>
           <p className="text-blue-100 mt-2 text-lg">Click on any image to modify it with AI</p>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="md:p-6 p-3 space-y-6">
           {/* Generated Prompt */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
@@ -157,7 +157,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               </div>
               <h3 className="text-xl font-bold text-gray-800">Generated Prompt</h3>
             </div>
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all duration-300">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 md:p-6 p-3 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all duration-300">
               <p className="text-gray-700 leading-relaxed font-medium">{result.generated_prompt}</p>
             </div>
           </div>
@@ -279,7 +279,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
           {/* Image Modification Panel */}
           {modifyState.selectedImageUuid && (
-            <div className="mt-8 p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-xl">
+            <div className="mt-8 p-3 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-xl">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
                   {/* <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
@@ -288,7 +288,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     </svg>
                   </div> */}
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    🎨 Modify Selected Image
+                    🎨 Modification
                   </h3>
                 </div>
                 <button
@@ -408,7 +408,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           </div>
 
           {/* Metadata */}
-           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 p-6 mt-6">
+           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 md:p-6 p-3 mt-6">
              <div className="flex items-center space-x-3 mb-4">
                <div className="w-8 h-8 bg-gradient-to-r from-gray-500 to-blue-500 rounded-lg flex items-center justify-center">
                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -417,14 +417,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                </div>
                <h3 className="text-lg font-bold text-gray-800">Generation Metadata</h3>
              </div>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-               {/* <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
-                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                 <div>
-                   <span className="text-xs font-medium text-gray-600 block">Model</span>
-                   <span className="text-sm font-bold text-gray-800">{result.images?.[0]?.model_name || 'Unknown'}</span>
-                 </div>
-               </div> */}
+             <div className="grid grid-cols-2 grid-cols-3 gap-2">
                <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200">
                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                  <div>

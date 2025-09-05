@@ -21,7 +21,7 @@ export const Welcome: React.FC = () => {
               </h1>
             </div>
             <p className="text-xl text-gray-600 mb-8">
-              AI-powered meme generator
+              AI-powered image generator
             </p>
           </div>
 

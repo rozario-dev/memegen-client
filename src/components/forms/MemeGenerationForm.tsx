@@ -6,6 +6,7 @@ import { LoginModal } from '../auth/LoginModal';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import type { DirectImageGenerationResponse, DirectMultipleImageGenerationRequest } from '../../lib/types';
 import { ModelSelector } from './ModelSelector';
+import { Loading } from './Loading';
 
 interface MemeGenerationFormProps {
   onGenerated?: (result: DirectImageGenerationResponse) => void;
@@ -100,7 +101,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto md:p-6 p-4">
       {/* Quota Display */}
       {quota && (
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
@@ -229,18 +230,15 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
               {loading ? (
                 <>
                   <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span className="text-lg">Creating Your Meme...</span>
+                    <Loading />
+                    <span className="text-lg">Creating Your Image...</span>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-20 animate-pulse"></div>
+                  {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-20 animate-pulse"></div> */}
                 </>
               ) : (
                 <>
                   <span className="text-2xl mr-3">🎨</span>
-                  <span>Generate Meme Image{formData.count && formData.count > 1 ? 's' : ''}</span>
+                  <span>Generate{formData.count && formData.count > 1 ? 's' : ''}</span>
                   <div className="ml-3 px-3 py-1 text-gray-500 bg-white bg-opacity-20 rounded-full text-sm font-medium">
                     {((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1))} credit{((CREDIT_COSTS[selectedTier] as number) * (formData.count || 1)) > 1 ? 's' : ''}
                   </div>

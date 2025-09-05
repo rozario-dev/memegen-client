@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect, useContext } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { AuthContext } from '../../contexts/AuthContextDefinition';
 import { apiService } from '../../lib/api';
 import { CREDIT_COSTS, DEFAULT_USER_TIER, type UserTierType } from '../../lib/constants';
 import { LoginModal } from '../auth/LoginModal';
@@ -8,10 +7,10 @@ import type { ModifiedImage, ImageModifyRequest } from '../../lib/types';
 import { ModelSelector } from '../forms/ModelSelector';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StyleSelector } from '../forms/StyleSelector';
+import { Loading } from '../forms/Loading';
 
 export const Edit: React.FC = () => {
   const { quota, refreshQuota, isAuthenticated } = useAuth();
-  const authContext = useContext(AuthContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,8 +30,6 @@ export const Edit: React.FC = () => {
 
   const referenceInputRef = useRef<HTMLInputElement>(null);
   
-  const isSolanaLogin = !!authContext?.solanaWalletAddress;
-
   const _setEditHistory = (imageUrl: string) => {
       setEditHistory([{
         id: 'original',
@@ -201,20 +198,19 @@ export const Edit: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <section className="pt-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             🎨 Edit Your
             <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              {' '}Images with AI
+              {' '}Image
             </span>
           </h1>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Upload your images and transform them with AI-powered editing.
-            Support multiple rounds of editing with history tracking.
+            Upload your images or click image from History list, transform them with image-to-image AI.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <span className="text-green-500">✓</span>
               <span>Multi-round editing</span>
@@ -227,7 +223,7 @@ export const Edit: React.FC = () => {
               <span className="text-green-500">✓</span>
               <span>AI-powered</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -238,7 +234,7 @@ export const Edit: React.FC = () => {
             <div className="space-y-6">
               {/* Image upload area */}
               {!selectedImage ? (
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg shadow-lg md:p-6 p-4">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     📁 Upload Image
                   </h2>
@@ -288,7 +284,7 @@ export const Edit: React.FC = () => {
                 </div>
               ) : (
                 /* Image preview area */
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg shadow-lg md:p-6 p-4">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-900">
                       🖼️ Current Image
@@ -317,6 +313,25 @@ export const Edit: React.FC = () => {
                       alt="Selected image"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
+                    {/* Mobile: always show Create token */}
+                    <button
+                      onClick={() => {
+                        navigate('/launch', { state: { imageUrl: selectedImage } });
+                      }}
+                      className="sm:hidden absolute top-2 left-2 px-3 py-1.5 bg-purple-600/90 text-white text-sm rounded-lg hover:bg-purple-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
+                    >
+                      Create token
+                    </button>
+                    {selectedImage && selectedImage.startsWith('http') && (
+                      <button
+                        onClick={() => {
+                          window.open(selectedImage, '_blank');
+                        }}
+                        className="sm:hidden absolute top-2 right-2 px-3 py-1.5 bg-blue-600/90 text-white text-sm rounded-lg hover:bg-blue-600 transition-all duration-200 cursor-pointer backdrop-blur-sm opacity-100"
+                      >
+                        View
+                      </button>
+                    )}
                     {isImageHovered && (
                       <>
                         <button
@@ -391,7 +406,7 @@ export const Edit: React.FC = () => {
 
               {/* Edit history */}
               {editHistory.length > 1 && (
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg shadow-lg md:p-6 p-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-4">
                     📚 Edit History
                   </h3>
@@ -433,7 +448,7 @@ export const Edit: React.FC = () => {
             {/* Right side: Edit control panel */}
             <div className="space-y-6">
               {selectedImage && (
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg shadow-lg md:p-6 p-4">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     ✨ AI Edit Controls
                   </h2>
@@ -488,14 +503,21 @@ export const Edit: React.FC = () => {
                           : 'bg-blue-600 text-white hover:bg-blue-700'
                       }`}
                     >
-                      {loading ? (
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Modifying...</span>
-                        </div>
-                      ) : (
-                        'Start Modification'
-                      )}
+                      <div className="relative flex items-center justify-center">
+                        {loading ? (
+                          <>
+                            <div className="flex items-center">
+                              <Loading />
+                              <span className="text-lg">Modifying...</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-2xl mr-3">🎨</span>
+                            <span>Start Modify</span>
+                          </>
+                        )}
+                      </div>
                     </button>
                   </div>
                 </div>

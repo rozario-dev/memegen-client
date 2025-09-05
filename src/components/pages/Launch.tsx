@@ -172,9 +172,9 @@ export const Launch: React.FC<LaunchProps> = () => {
   const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !wallet;
 
   return (
-    <div className="-mt-16 -mb-12 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-16 pb-20">
+    <div className="-mt-16 -mb-12 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-16 pb-20 px-3">
       <div className="max-w-5xl mx-auto">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-8 border border-white/20">
           <h1 className="text-4xl font-bold text-white mb-6 text-center">
             🚀 Create Flipflop Token
           </h1>
@@ -185,7 +185,7 @@ export const Launch: React.FC<LaunchProps> = () => {
               <div key={s.label} className="flex items-center gap-2">
                 <div className={`w-5 h-5 rounded-full border ${s.done ? 'bg-green-400 border-green-300' : 'bg-transparent border-white/40'}`}></div>
                 <span className={`text-sm ${s.done ? 'text-green-200' : 'text-white/70'}`}>{s.label}</span>
-                {idx < readySteps.length - 1 && <div className="w-8 h-[1px] bg-white/30 mx-2" />}
+                {idx < readySteps.length - 1 && <div className="w-4 h-[1px] bg-white/30 mx-2" />}
               </div>
             ))}
           </div>
