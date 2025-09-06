@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation, Navigate } from 'react-router-dom';
 import { compressImage, formatAddress } from '../../lib/format';
-import { useAnchorWallet, useConnection, type AnchorWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet, useConnection, useWallet, type AnchorWallet } from '@solana/wallet-adapter-react';
 
 const LazyLaunchTokenButton = React.lazy(() => import('@flipflop-sdk/tools').then(m => ({ default: m.LaunchTokenButton })));
 
@@ -33,6 +33,17 @@ export const Launch: React.FC<LaunchProps> = () => {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
 
+  // 为 SDK 构建带 sendTransaction 的钱包适配（移动端浏览器必需）
+  const walletCtx = useWallet();
+  const walletForSdk = useMemo(() => {
+    if (!walletCtx?.publicKey) return null;
+    return {
+      publicKey: walletCtx.publicKey,
+      signTransaction: walletCtx.signTransaction?.bind(walletCtx),
+      signAllTransactions: walletCtx.signAllTransactions?.bind(walletCtx),
+      sendTransaction: walletCtx.sendTransaction?.bind(walletCtx),
+    } as AnchorWallet & { sendTransaction: (...args: any[]) => Promise<string> };
+  }, [walletCtx]);
   // Match SDK image size constraint (MAX_AVATAR_SIZE = 250KB)
   const MAX_IMAGE_SIZE_MB = 0.25;
   const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
@@ -168,12 +179,13 @@ export const Launch: React.FC<LaunchProps> = () => {
   ];
 
   // Helper to determine if action should be disabled (require actual File per SDK)
-  console.log('formData.image', formData.image);
-  console.log('formData.name', formData.name);
-  console.log('formData.symbol', formData.symbol);
-  console.log('wallet', wallet);
+  // console.log('formData.image', formData.image);
+  // console.log('formData.name', formData.name);
+  // console.log('formData.symbol', formData.symbol);
+  // console.log('wallet', wallet);
 
-  const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !wallet;
+  // 用 walletForSdk 替换原有的判断，确保 sendTransaction 存在
+  const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !walletForSdk?.sendTransaction;
 
   return (
     <div className="-mt-16 -mb-12 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-16 pb-4 px-3">
@@ -361,7 +373,7 @@ export const Launch: React.FC<LaunchProps> = () => {
                 <Suspense fallback={<div className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-center">Loading launcher...</div>}>
                   <LazyLaunchTokenButton
                     network={network}
-                    wallet={wallet as AnchorWallet}
+                    wallet={walletForSdk as any}
                     connection={connection}
                     name={formData.name}
                     symbol={formData.symbol}
@@ -388,6 +400,9 @@ export const Launch: React.FC<LaunchProps> = () => {
                     onStart={() => {
                       setIsCreating(true);
                       setCreateStatus({ type: null, message: '' });
+                      // 便于调试移动端浏览器场景
+                      console.log('[Launch] wallet pubkey:', walletCtx?.publicKey?.toBase58?.());
+                      console.log('[Launch] has sendTransaction:', !!walletCtx?.sendTransaction);
                     }}
                     onSuccess={(data: any) => {
                       setIsCreating(false);
@@ -400,9 +415,6 @@ export const Launch: React.FC<LaunchProps> = () => {
                         tokenUrl,
                         tx
                       });
-                      // Reset form
-                      // setFormData({ name: '', symbol: '', image: null, imageUrl: '', tokenType: 'meme' });
-                      // console.log('Launch success:', data);
                     }}
                     onError={(error: string) => {
                       setIsCreating(false);
