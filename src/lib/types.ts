@@ -56,15 +56,12 @@ export interface QuotaResponse {
   total_quota: number;
   used_quota: number;
   remaining_quota: number;
-  subscription_plan?: string;
-  reset_date: string;
 }
 
 export interface UserProfile {
   id: string;
   email: string;
   quota: QuotaResponse;
-  created_at: string;
 }
 
 export interface QuotaUsage {
