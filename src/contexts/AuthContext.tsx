@@ -101,45 +101,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loadUserData = async () => {
     try {
-      const token = apiService.getToken();
-      
-      // Check if this is a Solana custom token
-      const solInfo = token ? isSolanaCustomToken(token) : false;
-      if (solInfo && typeof solInfo === 'object') {
-        const addr = solInfo.address;
-        
-        // Create mock user data for Solana authentication
-        // ###### 这里需要获取更多的Solana的supabase数据
-        const solQuota: QuotaResponse = {
-          user_id: addr,
-          total_quota: 100, // ######
-          used_quota: 0, // ######
-          remaining_quota: 100, // ######
-        };
-        
-        const solUser: UserProfile = {
-          id: addr,
-          email: addr,
-          quota: solQuota,
-        };
-        console.log("solana user data: ", solUser);
-        console.log("solana user quota: ", solQuota);
-        setUser(solUser);
-        setQuota(solQuota);
-        return;
-      }
-      
-      // For regular tokens, use API calls
       const [userData, quotaData] = await Promise.all([
         apiService.getUserProfile(),
         apiService.getUserQuota()
       ]);
-      
+      const token = apiService.getToken();
+      // Check if this is a Solana custom token
+      const solInfo = token ? isSolanaCustomToken(token) : false;
+      if (solInfo && typeof solInfo === 'object') {
+        // const addr = solInfo.address;
+        
+        // Create mock user data for Solana authentication
+        // ###### 这里需要获取更多的Solana的supabase数据
+        // const solQuota: QuotaResponse = {
+        //   user_id: addr,
+        //   total_quota: 100, // ######
+        //   used_quota: 0, // ######
+        //   remaining_quota: 100, // ######
+        // };
+        
+        // const solUser: UserProfile = {
+        //   id: addr,
+        //   email: addr,
+        //   quota: solQuota,
+        // };
+        // const [solUser, solQuota] = await Promise.all([
+        //   apiService.getUserProfile(),
+        //   apiService.getUserQuota()
+        // ]);
+        userData.email = solInfo.address;
+
+        // console.log("solana user data: ", solUser);
+        // console.log("solana user quota: ", solQuota);
+        // setUser(solUser);
+        // setQuota(solQuota);
+      } 
+      // else {
+      //   // For regular tokens, use API calls
+      //   const [userData, quotaData] = await Promise.all([
+      //     apiService.getUserProfile(),
+      //     apiService.getUserQuota()
+      //   ]);
+        
+      //   console.log("Regular user data: ", userData);
+      //   console.log("Regular user quota: ", quotaData);
+
+      //   setUser(userData);
+      //   setQuota(quotaData);
+      // }
       console.log("Regular user data: ", userData);
       console.log("Regular user quota: ", quotaData);
 
       setUser(userData);
       setQuota(quotaData);
+      
     } catch (error) {
       console.error('Failed to load user data:', error);
       throw error;
