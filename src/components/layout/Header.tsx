@@ -234,8 +234,8 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
       {isLogoutConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">确认退出</h3>
-            <p className="text-sm text-gray-600 mb-4">你确定要退出当前账号吗？</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm to logout</h3>
+            <p className="text-sm text-gray-600 mb-4">Are you sure to logout</p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsLogoutConfirmOpen(false)}
@@ -250,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 }}
                 className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
               >
-                Confirm to logout
+                Yes
               </button>
             </div>
           </div>
