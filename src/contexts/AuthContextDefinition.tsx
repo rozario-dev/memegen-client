@@ -11,7 +11,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   solanaWalletAddress: string | null;
   setSolanaWallet: (walletAddress: string) => void;
-  // 新增：标记当前是否为 Solana 自定义登录
   isSolanaAuth: boolean;
 }
 

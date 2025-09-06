@@ -59,7 +59,6 @@ class ApiService {
     if (error && typeof error === 'object' && 'response' in error) {
       const axiosError = error as { response?: { data?: { message?: string; detail?: string; error?: boolean }; status?: number } };
       if (axiosError.response?.data) {
-        // 优先使用 message，然后是 detail
         const errorMessage = axiosError.response.data.message || axiosError.response.data.detail || 'An error occurred';
         return {
           detail: errorMessage,

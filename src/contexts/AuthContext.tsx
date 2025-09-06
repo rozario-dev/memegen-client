@@ -215,7 +215,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const isAuthenticated = apiService.isAuthenticated();
-  // 基于当前 token 判断是否为 Solana 自定义登录
   const isSolanaAuth = (() => {
     try {
       const t = apiService.getToken();

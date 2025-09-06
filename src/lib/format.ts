@@ -21,7 +21,6 @@ export const compressImage = (file: File, maxSizeMB: number, maxWidth: number, m
     reader.onload = () => {
       const img = new Image();
       img.onload = async () => {
-        // 固定画布尺寸为 maxWidth x maxHeight，严格满足像素要求
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject(new Error('Canvas not supported'));
@@ -31,11 +30,9 @@ export const compressImage = (file: File, maxSizeMB: number, maxWidth: number, m
         canvas.width = targetW;
         canvas.height = targetH;
 
-        // 初始以“等比缩放填充至画布内并居中”的方式绘制
         const baseScale = Math.min(targetW / img.width, targetH / img.height, 1);
         let currentScale = baseScale;
 
-        // 选择有损格式以便质量参数有效
         let outputType: string = 'image/webp';
         if (/jpe?g$/i.test(file.type)) outputType = 'image/jpeg';
 
@@ -48,7 +45,6 @@ export const compressImage = (file: File, maxSizeMB: number, maxWidth: number, m
 
         const renderToBlob = (): Promise<Blob> =>
           new Promise((res, rej) => {
-            // 清空背景，保持透明/空白区域
             ctx!.clearRect(0, 0, canvas.width, canvas.height);
             const drawW = Math.max(1, Math.floor(img.width * currentScale));
             const drawH = Math.max(1, Math.floor(img.height * currentScale));
@@ -72,7 +68,6 @@ export const compressImage = (file: File, maxSizeMB: number, maxWidth: number, m
               quality = Math.max(0.5, quality - 0.1);
               continue;
             }
-            // 质量降到阈值仍超限，进一步降低绘制比例（保持导出尺寸不变）
             currentScale = Math.max(0.2, currentScale * 0.9);
           }
 

@@ -95,7 +95,6 @@ export const Launch: React.FC<LaunchProps> = () => {
       return;
     }
     const sizeMb = file.size / (1024 * 1024);
-    // GIF 压缩在前端较复杂，这里仅在超限时提示
     const isGif = /gif$/i.test(file.type);
 
     if (sizeMb > MAX_IMAGE_SIZE_MB) {

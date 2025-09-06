@@ -24,7 +24,6 @@ export const History: React.FC = () => {
         const data = await apiService.getImageHistory(pageSize, offset);
         setHistoryData(data);
         
-        // 计算总页数
         if (data.total_count) {
           setTotalPages(Math.ceil(data.total_count / pageSize));
         }
@@ -237,7 +236,6 @@ export const History: React.FC = () => {
                 .filter(record => !hideFailedRecords || record.status === 'completed')
                 .map(renderHistoryItem)}
               
-              {/* 分页控件 */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center space-x-4 mt-8">
                   <button
@@ -253,7 +251,6 @@ export const History: React.FC = () => {
                   </button>
                   
                   <div className="flex items-center space-x-2">
-                    {/* 页码显示 */}
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
                       if (totalPages <= 5) {

@@ -139,12 +139,10 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               ) : user ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
-                    {(() => {                       
-                      // 仅在 Solana 自定义登录下显示钱包地址
+                    {(() => {
                       if (isSolanaAuth && solanaWalletAddress) {
                         return formatAddress(solanaWalletAddress, 4, 4);
                       }
-                      // 否则优先显示邮箱；没有邮箱则兜底显示用户 id 短串
                       const hasEmail = !!user?.email && !user.email.includes('@solana.wallet');
                       if (hasEmail) {
                         return user!.email!;
