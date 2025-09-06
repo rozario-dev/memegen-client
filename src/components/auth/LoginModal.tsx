@@ -159,11 +159,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           try {
             setIsLoading(true);
             setLoadingProvider('solana');
-            
-            // 1) 优先使用子组件传回的 publicKey（来源于 adapter.publicKey）
             let addr = selectedPk;
-            
-            // 2) 拿不到时再回退到 useWallet 状态（必要时等待刷新）
             if (!addr) {
               let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
               if (!effectivePk) {
