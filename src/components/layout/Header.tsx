@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LoginModal } from '../auth/LoginModal';
 import { useAuth } from '../../hooks/useAuth';
-import { formatAddress } from '../../lib/format';
+// removed: import { formatAddress } from '../../lib/format';
 
 interface HeaderProps {
   className?: string;
@@ -12,7 +12,8 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
-  const { user, logout, loading, solanaWalletAddress, isSolanaAuth } = useAuth();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const { user, logout, loading, solanaWalletAddress } = useAuth();
   const location = useLocation();
 
   const handleLogout = async () => {
@@ -138,25 +139,41 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   Loading...
                 </button>
               ) : user ? (
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">
-                    {(() => {
-                      if (isSolanaAuth && solanaWalletAddress) {
-                        return formatAddress(solanaWalletAddress, 4, 4);
-                      }
-                      const hasEmail = !!user?.email && !user.email.includes('@solana.wallet');
-                      if (hasEmail) {
-                        return user!.email!;
-                      }
-                      return formatAddress(user?.id || '', 4, 4);
-                    })()} 
-                  </span>
+                <div className="relative">
                   <button
-                    onClick={() => setIsLogoutConfirmOpen(true)}
-                    className="px-4 py-2 cursor-pointer rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
+                    onClick={() => setIsAccountMenuOpen((v) => !v)}
+                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors text-sm flex items-center gap-2"
                   >
-                    Logout
+                    <span className="truncate max-w-[180px]" title={user.email || ''}>
+                      {user.email}
+                    </span>
+                    <svg className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
                   </button>
+
+                  {isAccountMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          alert('Funding');
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Funding
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          setIsLogoutConfirmOpen(true);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button

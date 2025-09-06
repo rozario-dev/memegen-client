@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { UserProfile, QuotaResponse } from '../lib/types';
 import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { isSolanaCustomToken } from '../lib/format';
+import { formatAddress, isSolanaCustomToken } from '../lib/format';
 
 const SOLANA_WALLET_KEY = 'solana_wallet_address';
 
@@ -110,7 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Check if this is a Solana custom token
       const solInfo = token ? isSolanaCustomToken(token) : false;
       if (solInfo && typeof solInfo === 'object') {
-        userData.email = solInfo.address;
+        userData.email = formatAddress(solInfo.address);
       } 
       setUser(userData);
       setQuota(quotaData);      

@@ -178,22 +178,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             console.log("===login modal: 5===", addr)
             setSolanaWallet(addr);
             
-            // 轻微延时，稳定事件流
             await new Promise((r) => setTimeout(r, 100));
             
-            // 新增：解析可用的钱包对象（window.solana 或 wallet-adapter）
             const phantomProvider = (window as any)?.solana?.isPhantom ? (window as any).solana : null;
             const adapter: any = (wallet as any)?.adapter;
             const accountPk: any = adapter?.publicKey ?? publicKey;
             const hasSignMessage = typeof adapter?.signMessage === 'function';
             
-            // 包装一个符合 Supabase 需要的最小钱包接口（仅 signMessage + publicKey）
             const adapterAsProvider = (hasSignMessage && accountPk)
               ? {
-                publicKey: accountPk, // PublicKey 对象即可（与 Phantom provider 一致）
+                publicKey: accountPk,
                 signMessage: async (message: Uint8Array) => {
                   const res = await adapter.signMessage(message);
-                  // 有的钱包返回 Uint8Array，有的返回 { signature }
                   return (res?.signature ?? res);
                 },
                 connect: async () => { if (!adapter.connected) await adapter.connect(); },
@@ -201,12 +197,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               }
             : null;
             
-            // 优先使用 window.solana（在钱包内置浏览器中），否则用适配器包装对象
             const resolvedUserWallet = phantomProvider || adapterAsProvider;
             
             const attemptSignIn = async () => {
               if (!resolvedUserWallet && !(window as any)?.solana) {
-                throw new Error('未检测到兼容的 Solana 钱包接口：请在钱包内置浏览器中打开，或使用支持 signMessage 的钱包并完成连接。');
+                throw new Error('No compatible Solana wallet interface detected: Please open in wallet browser, or use a wallet that supports signMessage and complete the connection.');
               }
               return supabase.auth.signInWithWeb3({
                 chain: 'solana',
