@@ -65,13 +65,13 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               <div className="flex-shrink-0 hidden md:block">
                 <img
                   src="/logo.svg"
-                  alt="memeGen"
+                  alt="MemeGen"
                   className="h-8 w-8"
                 />
               </div>
               <div className="ml-3 hidden md:block">
                 <h1 className="text-xl font-bold text-gray-900">
-                  memeGen
+                  MemeGen
                 </h1>
                 <p className="text-xs text-gray-500 hidden sm:block">
                   AI-powered meme generator

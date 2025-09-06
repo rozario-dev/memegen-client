@@ -92,5 +92,5 @@ export const disconnectSolanaWallet = async (): Promise<void> => {
 export const generateAuthMessage = (publicKey: string): string => {
   const timestamp = Date.now();
   const nonce = Math.random().toString(36).substring(2, 15);
-  return `Sign this message to authenticate with memeGen.\n\nPublic Key: ${publicKey}\nTimestamp: ${timestamp}\nNonce: ${nonce}`;
+  return `Sign this message to authenticate with MemeGen.\n\nPublic Key: ${publicKey}\nTimestamp: ${timestamp}\nNonce: ${nonce}`;
 };

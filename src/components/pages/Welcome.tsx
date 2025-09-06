@@ -13,11 +13,11 @@ export const Welcome: React.FC = () => {
             <div className="flex justify-center items-center mt-12 mb-6">
               <img
                 src="/logo.svg"
-                alt="memeGen"
+                alt="MemeGen"
                 className="h-16 w-16 mr-4"
               />
               <h1 className="md:text-5xl md:mt-0 text-3xl font-bold text-gray-900">
-                memeGen
+                MemeGen
               </h1>
             </div>
             <p className="text-xl text-gray-600 mb-8">

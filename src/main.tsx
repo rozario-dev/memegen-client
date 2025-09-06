@@ -43,7 +43,7 @@ const wallets = [
   new SolflareWalletAdapter({ network }),
   new SolanaMobileWalletAdapter({
     appIdentity: {
-      name: 'memeGen',
+      name: 'MemeGen',
       uri: appUrl,
       icon: '/logo.png',
     },

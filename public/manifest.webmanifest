@@ -1,6 +1,6 @@
 {
-  "name": "memeGen",
-  "short_name": "memeGen",
+  "name": "MemeGen",
+  "short_name": "MemeGen",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
