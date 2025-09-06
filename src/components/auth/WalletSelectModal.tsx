@@ -36,11 +36,20 @@ const readinessLabel = (state: WalletReadyState) => {
 };
 
 export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, onClose, onSelect }) => {
-  const { wallets, select } = useWallet();
+  const { wallets, select, connect, wallet } = useWallet();
 
   if (!isOpen) return null;
 
   const sorted = [...wallets].sort((a, b) => readinessOrder(a.readyState) - readinessOrder(b.readyState));
+
+  const waitForSelection = async (name: string, timeoutMs = 1000) => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (wallet?.adapter?.name === name) return true;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return false;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -68,9 +77,16 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
               <button
                 key={name}
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   if (disabled) return;
                   select(name);
+                  await waitForSelection(name);
+                  try {
+                    await connect();
+                  } catch (e) {
+                    // 连接失败也让父组件去处理后续逻辑/错误
+                    console.error('connect error', e);
+                  }
                   onSelect?.(name);
                   onClose();
                 }}
