@@ -180,7 +180,7 @@ export const Launch: React.FC<LaunchProps> = () => {
 
           {/* Steps Indicator */}
           <div className="flex items-center justify-center gap-6 mb-8">
-            {readySteps.map((s, idx) => (
+            {readySteps.map((s) => (
               <div key={s.label} className="flex items-center gap-2">
                 <div className={`w-5 h-5 rounded-full border ${s.done ? 'bg-green-400 border-green-300' : 'bg-transparent border-white/40'}`}></div>
                 <span className={`text-sm ${s.done ? 'text-green-200' : 'text-white/70'}`}>{s.label}</span>
