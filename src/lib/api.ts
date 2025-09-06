@@ -78,9 +78,14 @@ class ApiService {
   }
 
   // Authentication methods
-  setToken(token: string) {
+  setToken(token: string, persist: boolean = true) {
     this.token = token;
-    localStorage.setItem('auth_token', token);
+    if (persist) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      // ensure no stale token lingers in localStorage when using non-persistent session
+      localStorage.removeItem('auth_token');
+    }
   }
 
   getToken(): string | null {
@@ -107,7 +112,7 @@ class ApiService {
     } catch (error) {
       console.error('API request failed:', error);
       // Check if it's a network error (backend not running)
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'ECONNREFUSED') {
+      if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'ECONNREFUSED') {
         throw new Error('Backend service is not running. Please start the API server.');
       }
       throw error;

@@ -6,6 +6,7 @@ import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 const SOLANA_WALLET_KEY = 'solana_wallet_address';
+const LOGOUT_GUARD_KEY = 'logout_guard';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -29,16 +30,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSolanaWalletAddress(storedWallet);
       }
 
-      // Check for existing Supabase session first
+      const hasLogoutGuard = !!localStorage.getItem(LOGOUT_GUARD_KEY);
+
+      // Check for existing Supabase session first (unless logout guard is set)
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (session) {
-        // Use Supabase JWT token
+      if (!hasLogoutGuard && session) {
+        // Use Supabase JWT token (non-persistent; Supabase manages session persistence)
         const token = session.access_token;
-        apiService.setToken(token);
+        apiService.setToken(token, false);
         await loadUserData();
       } else {
-        // Fallback to stored token
+        // If logout guard exists but Supabase still has a session, proactively clear it
+        if (hasLogoutGuard && session) {
+          try { await supabase.auth.signOut(); } catch {}
+        }
+        // Fallback to stored token (only for app-managed tokens like Solana custom token)
         const token = apiService.getToken();
         if (token) {
           await loadUserData();
@@ -67,8 +74,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
+          // Clear logout guard upon successful sign-in
+          localStorage.removeItem(LOGOUT_GUARD_KEY);
+
           const token = session.access_token;
-          apiService.setToken(token);
+          apiService.setToken(token, false);
           try {
             await loadUserData();
             // If this is a Solana login, persist the wallet address using wallet-adapter state
@@ -147,7 +157,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (token: string) => {
-    apiService.setToken(token);
+    // Clear logout guard on explicit login
+    localStorage.removeItem(LOGOUT_GUARD_KEY);
+
+    // Persist only for Solana custom tokens; Supabase tokens are non-persistent
+    const persist = isSolanaCustomToken(token);
+    apiService.setToken(token, persist);
     await loadUserData();
   };
   
@@ -189,6 +204,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Set logout guard so we don't auto-restore Supabase on refresh
+      localStorage.setItem(LOGOUT_GUARD_KEY, Date.now().toString());
+
       // Clear local state first
       apiService.clearToken();
       setUser(null);

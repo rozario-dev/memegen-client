@@ -14,7 +14,8 @@ export const LoginButton: React.FC<LoginButtonProps> = ({ className = '' }) => {
     if (token) {
       try {
         await login(token);
-        localStorage.setItem('auth_token', token);
+        // Removed: localStorage writes are managed by apiService.setToken
+        // localStorage.setItem('auth_token', token);
       } catch {
         alert('Invalid token');
       }
