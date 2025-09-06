@@ -65,3 +65,21 @@ createRoot(document.getElementById('root')!).render(
     </ConnectionProvider>
   </StrictMode>,
 )
+// Dev-only mobile console (eruda)
+const shouldLoadEruda =
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+  window.location.hash.includes('eruda');
+
+if (shouldLoadEruda) {
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/eruda';
+  s.async = true;
+  s.onload = () => {
+    // @ts-ignore
+    window.eruda?.init();
+    // 如需一加载就展开面板，可保留 show；不需要的话可以去掉
+    // @ts-ignore
+    window.eruda?.show();
+  };
+  document.body.appendChild(s);
+}
