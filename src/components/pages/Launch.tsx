@@ -184,7 +184,7 @@ export const Launch: React.FC<LaunchProps> = () => {
               <div key={s.label} className="flex items-center gap-2">
                 <div className={`w-5 h-5 rounded-full border ${s.done ? 'bg-green-400 border-green-300' : 'bg-transparent border-white/40'}`}></div>
                 <span className={`text-sm ${s.done ? 'text-green-200' : 'text-white/70'}`}>{s.label}</span>
-                {idx < readySteps.length - 1 && <div className="w-4 h-[1px] bg-white/30 mx-2" />}
+                {/* {idx < readySteps.length - 1 && <div className="w-4 h-[1px] bg-white/30 mx-2" />} */}
               </div>
             ))}
           </div>
