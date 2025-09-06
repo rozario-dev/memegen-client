@@ -79,7 +79,7 @@ if (import.meta.env.VITE_SOLANA_NETWORK === "devnet") {
       // @ts-ignore
       window.eruda?.init();
       // @ts-ignore
-      window.eruda?.show();
+      // window.eruda?.show();
     };
     document.body.appendChild(s);
   }
