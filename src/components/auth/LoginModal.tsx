@@ -66,6 +66,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   };
 
   const waitForSignedOut = async (timeoutMs = 1500) => {
+    console.log("wait for signed out");
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const { data } = await supabase.auth.getSession();
@@ -77,60 +78,61 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   const handleSolanaLogin = async () => {
     try {
-      setIsLoading(true);
-      setLoadingProvider('solana');
+      // setIsLoading(true);
+      // setLoadingProvider('solana');
       await waitForSignedOut();
 
-      if (!wallet) {
-        setShowWalletSelect(true);
-        return;
-      }
+      setShowWalletSelect(true);
+      // if (!wallet) {
+      //   setShowWalletSelect(true);
+      //   return;
+      // }
 
-      let didConnectNow = false;
-      if (!connected) {
-        await connect();
-        didConnectNow = true;
-      }
-      let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
-      if (!effectivePk) {
-        effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
-      }
-      const addr = effectivePk?.toBase58?.();
-      if (!addr) {
-        throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
-      }
-      setSolanaWallet(addr);
-      if (didConnectNow) {
-        await new Promise((r) => setTimeout(r, 400));
-      }
-      await new Promise((r) => setTimeout(r, 100));
-      const attemptSignIn = async () => {
-        return supabase.auth.signInWithWeb3({
-          chain: 'solana',
-          statement: 'I accept the Terms of Service and want to sign in to this application',
-        });
-      };
-      let { data, error } = await attemptSignIn();
-      if (error) {
-        const msg = (error.message || '').toLowerCase();
-        const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
-        if (!isUserReject) {
-          await new Promise((r) => setTimeout(r, 300));
-          ({ data, error } = await attemptSignIn());
-        }
-      }
-      if (error) {
-        console.error('Supabase Web3 signin error:', error);
-        if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
-          throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
-        }
-        throw new Error(`Web3 authentication failed: ${error.message}`);
-      }
-      if (data?.user) {
-        console.log('Supabase Web3 sign in successful!');
-      }
+      // let didConnectNow = false;
+      // if (!connected) {
+      //   await connect();
+      //   didConnectNow = true;
+      // }
+      // let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+      // if (!effectivePk) {
+      //   effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
+      // }
+      // const addr = effectivePk?.toBase58?.();
+      // if (!addr) {
+      //   throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
+      // }
+      // setSolanaWallet(addr);
+      // if (didConnectNow) {
+      //   await new Promise((r) => setTimeout(r, 400));
+      // }
+      // await new Promise((r) => setTimeout(r, 100));
+      // const attemptSignIn = async () => {
+      //   return supabase.auth.signInWithWeb3({
+      //     chain: 'solana',
+      //     statement: 'I accept the Terms of Service and want to sign in to this application',
+      //   });
+      // };
+      // let { data, error } = await attemptSignIn();
+      // if (error) {
+      //   const msg = (error.message || '').toLowerCase();
+      //   const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
+      //   if (!isUserReject) {
+      //     await new Promise((r) => setTimeout(r, 300));
+      //     ({ data, error } = await attemptSignIn());
+      //   }
+      // }
+      // if (error) {
+      //   console.error('Supabase Web3 signin error:', error);
+      //   if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
+      //     throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
+      //   }
+      //   throw new Error(`Web3 authentication failed: ${error.message}`);
+      // }
+      // if (data?.user) {
+      //   console.log('Supabase Web3 sign in successful!');
+      // }
 
-      onClose();
+      // onClose();
     } catch (error: any) {
       console.error('Solana authentication error:', error);
       alert(error?.message || 'Failed to authenticate with Solana wallet. Please try again.');
@@ -208,13 +210,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </span>
             </button>
 
-            <button
+            {/* <button
               type="button"
               onClick={() => setShowWalletSelect(true)}
               className="text-xs text-gray-600 hover:text-gray-800 underline self-center"
             >
               Choose wallet
-            </button>
+            </button> */}
           </div>
 
           {!isSupabaseConfigured && (
@@ -232,35 +234,56 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           try {
             setIsLoading(true);
             setLoadingProvider('solana');
+            let didConnectNow = false;
             // 选择钱包后立即尝试连接并登录
             if (!connected) {
               await connect();
+              didConnectNow = true;
             }
             let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
             if (!effectivePk) {
               effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
             }
             const addr = effectivePk?.toBase58?.();
-            if (!addr) return;
+            if (!addr) {
+              throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
+            }
             setSolanaWallet(addr);
+            if (didConnectNow) {
+              await new Promise((r) => setTimeout(r, 400));
+            }
             await new Promise((r) => setTimeout(r, 100));
-            const { data, error } = await supabase.auth.signInWithWeb3({
-              chain: 'solana',
-              statement: 'I accept the Terms of Service and want to sign in to this application',
-            });
+            const attemptSignIn = async () => {
+              return supabase.auth.signInWithWeb3({
+                chain: 'solana',
+                statement: 'I accept the Terms of Service and want to sign in to this application',
+              });
+            };
+            let { data, error } = await attemptSignIn();
+            if (error) {
+              const msg = (error.message || '').toLowerCase();
+              const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
+              if (!isUserReject) {
+                await new Promise((r) => setTimeout(r, 300));
+                ({ data, error } = await attemptSignIn());
+              }
+            }
             if (error) {
               console.error('Supabase Web3 signin error:', error);
-              alert(error.message || 'Web3 authentication failed');
-              return;
+              if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
+                throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
+              }
+              throw new Error(`Web3 authentication failed: ${error.message}`);
             }
             if (data?.user) {
-              onClose();
+              console.log('Supabase Web3 sign in successful!');
             }
           } catch (e) {
             console.error(e);
           } finally {
             setIsLoading(false);
             setLoadingProvider(null);
+            onClose();
           }
         }}
       />

@@ -91,7 +91,7 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                   onClose();
                 }}
                 disabled={disabled}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                className="w-full flex items-center cursor-pointer justify-between px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   {icon ? (
