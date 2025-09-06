@@ -4,7 +4,7 @@ import { WalletReadyState } from '@solana/wallet-adapter-base';
 interface WalletSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect?: (result: { name: string; publicKey?: string }) => void;
+  onSelect?: (payload: { name: string; publicKey?: string }) => void;
 }
 
 const readinessOrder = (state: WalletReadyState) => {
@@ -42,6 +42,16 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
 
   const sorted = [...wallets].sort((a, b) => readinessOrder(a.readyState) - readinessOrder(b.readyState));
 
+  const waitForAdapterPublicKey = async (adapter: any, timeoutMs = 4000) => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const pk = adapter?.publicKey;
+      if (pk) return pk;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return null;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
@@ -69,15 +79,19 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                 key={name}
                 type="button"
                 onClick={async () => {
-                  console.log("Connecting...")
                   if (disabled) return;
+                  // 保持上下文选择，确保 UI 一致
                   select(name);
+                  let pkBase58: string | undefined;
                   try {
+                    // 直接对被点击的适配器连接，避免依赖 useWallet 状态的异步刷新
                     await w.adapter.connect();
+                    const adapterPk = await waitForAdapterPublicKey(w.adapter);
+                    pkBase58 = (adapterPk as any)?.toBase58?.();
                   } catch (e) {
                     console.error('connect error', e);
                   }
-                  onSelect?.({ name });
+                  onSelect?.({ name, publicKey: pkBase58 });
                   onClose();
                 }}
                 disabled={disabled}

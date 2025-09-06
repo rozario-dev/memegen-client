@@ -42,19 +42,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // const autoSelectWalletIfNeeded = () => {
-  //   if (wallet) return; // already selected
-  //   const phantom = wallets.find(w => w.adapter.name === 'Phantom' && (w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable));
-  //   const installed = wallets.find(w => w.readyState === WalletReadyState.Installed);
-  //   const loadable = wallets.find(w => w.readyState === WalletReadyState.Loadable);
-  //   const target = phantom || installed || loadable;
-  //   if (!target) {
-  //     setShowWalletSelect(true);
-  //     return;
-  //   }
-  //   select(target.adapter.name);
-  // };
-
   const waitForPublicKey = async (getPk: () => any, timeoutMs = 3000) => {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
@@ -78,63 +65,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   const handleSolanaLogin = async () => {
     try {
-      // setIsLoading(true);
-      // setLoadingProvider('solana');
       await waitForSignedOut();
-
       setShowWalletSelect(true);
-      // if (!wallet) {
-      //   setShowWalletSelect(true);
-      //   return;
-      // }
-
-      // let didConnectNow = false;
-      // if (!connected) {
-      //   await connect();
-      //   didConnectNow = true;
-      // }
-      // let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
-      // if (!effectivePk) {
-      //   effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
-      // }
-      // const addr = effectivePk?.toBase58?.();
-      // if (!addr) {
-      //   throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
-      // }
-      // setSolanaWallet(addr);
-      // if (didConnectNow) {
-      //   await new Promise((r) => setTimeout(r, 400));
-      // }
-      // await new Promise((r) => setTimeout(r, 100));
-      // const attemptSignIn = async () => {
-      //   return supabase.auth.signInWithWeb3({
-      //     chain: 'solana',
-      //     statement: 'I accept the Terms of Service and want to sign in to this application',
-      //   });
-      // };
-      // let { data, error } = await attemptSignIn();
-      // if (error) {
-      //   const msg = (error.message || '').toLowerCase();
-      //   const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
-      //   if (!isUserReject) {
-      //     await new Promise((r) => setTimeout(r, 300));
-      //     ({ data, error } = await attemptSignIn());
-      //   }
-      // }
-      // if (error) {
-      //   console.error('Supabase Web3 signin error:', error);
-      //   if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
-      //     throw new Error('Web3 authentication is not enabled in Supabase. Please enable the Web3 Wallet provider in your Supabase dashboard.');
-      //   }
-      //   throw new Error(`Web3 authentication failed: ${error.message}`);
-      // }
-      // if (data?.user) {
-      //   console.log('Supabase Web3 sign in successful!');
-      // }
-
-      // onClose();
     } catch (error: any) {
-      console.error('Solana authentication error:', error);
       alert(error?.message || 'Failed to authenticate with Solana wallet. Please try again.');
     } finally {
       setIsLoading(false);
@@ -209,14 +142,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 {loadingProvider === 'solana' ? 'Connecting...' : (connected ? 'Sign in with Solana' : 'Connect with Solana')}
               </span>
             </button>
-
-            {/* <button
-              type="button"
-              onClick={() => setShowWalletSelect(true)}
-              className="text-xs text-gray-600 hover:text-gray-800 underline self-center"
-            >
-              Choose wallet
-            </button> */}
           </div>
 
           {!isSupabaseConfigured && (
@@ -230,41 +155,39 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       <WalletSelectModal
         isOpen={showWalletSelect}
         onClose={() => setShowWalletSelect(false)}
-        onSelect={async () => {
+        onSelect={async ({ publicKey: selectedPk } = {} as any) => {
           try {
             setIsLoading(true);
             setLoadingProvider('solana');
-            let didConnectNow = false;
-            console.log("===1===")
-            // if (!connected) {
-            //   await connect();
-            //   didConnectNow = true;
-            // }
-            // console.log("===2===")
-            let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
-            if (!effectivePk) {
-              effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
+            
+            // 1) 优先使用子组件传回的 publicKey（来源于 adapter.publicKey）
+            let addr = selectedPk;
+            
+            // 2) 拿不到时再回退到 useWallet 状态（必要时等待刷新）
+            if (!addr) {
+              let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+              if (!effectivePk) {
+                effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
+              }
+              addr = effectivePk?.toBase58?.();
             }
-            console.log("===3===")
-            const addr = effectivePk?.toBase58?.();
+            
             if (!addr) {
               throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
             }
             setSolanaWallet(addr);
-            if (didConnectNow) {
-              await new Promise((r) => setTimeout(r, 400));
-            }
-            console.log("===4===")
+            
+            // 轻微延时，稳定事件流
             await new Promise((r) => setTimeout(r, 100));
+            
             const attemptSignIn = async () => {
               return supabase.auth.signInWithWeb3({
                 chain: 'solana',
                 statement: 'I accept the Terms of Service and want to sign in to this application',
               });
             };
-            console.log("===5===")
+            
             let { data, error } = await attemptSignIn();
-            console.log("===6===")
             if (error) {
               const msg = (error.message || '').toLowerCase();
               const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
@@ -273,7 +196,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 ({ data, error } = await attemptSignIn());
               }
             }
-            console.log("===7===")
+            
             if (error) {
               console.error('Supabase Web3 signin error:', error);
               if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
@@ -285,7 +208,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               console.log('Supabase Web3 sign in successful!');
             }
           } catch (e) {
-            console.log("Connect error", e)
+            console.log('Connect error', e);
           } finally {
             setIsLoading(false);
             setLoadingProvider(null);
