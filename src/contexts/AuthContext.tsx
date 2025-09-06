@@ -56,8 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const addr = publicKey?.toBase58();
     if (connected && addr) {
-      setSolanaWalletAddress(addr);
-      localStorage.setItem(SOLANA_WALLET_KEY, addr);
+      setSolanaWallet(addr);
     }
   }, [connected, publicKey]);
 
@@ -75,9 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // If this is a Solana login, persist the wallet address using wallet-adapter state
             const addr = publicKey?.toBase58();
             if (addr) {
-              setSolanaWalletAddress(addr);
-              localStorage.setItem(SOLANA_WALLET_KEY, addr);
-              // console.log('Solana wallet address stored:', addr);
+              setSolanaWallet(addr);
             }
           } catch (error) {
             console.error('Failed to load user data after sign in:', error);
@@ -87,8 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             apiService.clearToken();
             setUser(null);
             setQuota(null);
-            setSolanaWalletAddress(null);
-            localStorage.removeItem(SOLANA_WALLET_KEY);
+            removeSolanaWallet();
           }
         }
       }
@@ -155,12 +151,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await loadUserData();
   };
   
+  function parseTokenPayload(token: string): any | null {
+    try {
+      // 若为 JWT（x.y.z），只解析 payload 段
+      const parts = token.split('.');
+      const b64 = parts.length === 3 ? parts[1] : token; // 不是 JWT 就当作单段处理
+
+      // Base64URL -> Base64，并补齐 =
+      const normalized = b64.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+
+      const json = atob(padded);
+      return JSON.parse(json);
+    } catch {
+      return null;
+    }
+  }
+
   // Helper functions for Solana token handling
   const isSolanaCustomToken = (token: string): boolean => {
     try {
-      const decoded = JSON.parse(atob(token));
-      return decoded.provider === 'solana' && decoded.publicKey && decoded.signature;
-    } catch {
+      const payload = parseTokenPayload(token);
+      console.log(payload)
+      return !!(payload && payload.provider === 'solana' && payload.publicKey && payload.signature);
+    } catch (e) {
       return false;
     }
   };
@@ -179,8 +193,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiService.clearToken();
       setUser(null);
       setQuota(null);
-      setSolanaWalletAddress(null);
-      localStorage.removeItem(SOLANA_WALLET_KEY);
+      removeSolanaWallet();
 
       // Sign out from Supabase (handles Google and GitHub)
       await supabase.auth.signOut();
@@ -211,8 +224,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const setSolanaWallet = (walletAddress: string) => {
     setSolanaWalletAddress(walletAddress);
     localStorage.setItem(SOLANA_WALLET_KEY, walletAddress);
-    console.log('Solana wallet address set:', walletAddress);
   };
+
+  const removeSolanaWallet = () => {
+    setSolanaWalletAddress(null);
+    localStorage.removeItem(SOLANA_WALLET_KEY);
+  }
 
   const isAuthenticated = apiService.isAuthenticated();
   const isSolanaAuth = (() => {
