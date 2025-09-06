@@ -70,16 +70,13 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                 type="button"
                 onClick={async () => {
                   if (disabled) return;
+                  select(name);
                   try {
-                    // 先在上下文里标记选择，用于 UI 一致性
-                    select(name);
-                    // 直接对当前被点击的钱包适配器连接，避免 useWallet 状态更新的竞态
                     await w.adapter.connect();
                   } catch (e) {
                     console.error('connect error', e);
                   }
-                  const pk = (w.adapter.publicKey as any)?.toBase58?.();
-                  onSelect?.({ name, publicKey: pk });
+                  onSelect?.({ name });
                   onClose();
                 }}
                 disabled={disabled}

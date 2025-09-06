@@ -236,11 +236,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             setLoadingProvider('solana');
             let didConnectNow = false;
             console.log("===1===")
-            if (!connected) {
-              await connect();
-              didConnectNow = true;
-            }
-            console.log("===2===")
+            // if (!connected) {
+            //   await connect();
+            //   didConnectNow = true;
+            // }
+            // console.log("===2===")
             let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
             if (!effectivePk) {
               effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
