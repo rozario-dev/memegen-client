@@ -168,6 +168,11 @@ export const Launch: React.FC<LaunchProps> = () => {
   ];
 
   // Helper to determine if action should be disabled (require actual File per SDK)
+  console.log('formData.image', formData.image);
+  console.log('formData.name', formData.name);
+  console.log('formData.symbol', formData.symbol);
+  console.log('wallet', wallet);
+
   const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !wallet;
 
   return (
