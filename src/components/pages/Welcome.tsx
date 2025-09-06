@@ -62,7 +62,7 @@ export const Welcome: React.FC = () => {
             </p>
             <button
               onClick={() => setIsLoginModalOpen(true)}
-              className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-lg font-medium"
+              className="cursor-pointer px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-lg font-medium"
             >
               Get Started
             </button>
