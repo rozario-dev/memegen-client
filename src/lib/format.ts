@@ -88,3 +88,56 @@ export const compressImage = (file: File, maxSizeMB: number, maxWidth: number, m
     };
   });
 };
+
+export function parseTokenPayload(token: string): any | null {
+  try {
+    const parts = token.split('.');
+    const b64 = parts.length === 3 ? parts[1] : token;
+    const normalized = b64.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    const json = atob(padded);
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+  // Helper functions for Solana token handling
+  export const isSolanaCustomToken = (token: string): boolean | {address: string, chain: string} => {
+    try {
+      const payload = parseTokenPayload(token);
+      if (!payload) return false;
+
+      // Case 1: Supabase Web3 JWT (preferred)
+      const appMeta = payload.app_metadata;
+      const isWeb3Provider = appMeta?.provider === 'web3' || (Array.isArray(appMeta?.providers) && appMeta.providers.includes('web3'));
+      if (isWeb3Provider) {
+        const custom = payload.user_metadata?.custom_claims || {};
+        let address: string | undefined = custom.address;
+        let chain: string | undefined = custom.chain;
+
+        // Fallback: try to parse from sub like "web3:solana:<address>"
+        const sub: string | undefined = payload.user_metadata?.sub || payload.sub;
+        if (!address && typeof sub === 'string' && sub.startsWith('web3:')) {
+          const parts = sub.split(':');
+          if (parts.length >= 3) {
+            chain = chain || parts[1];
+            address = parts.slice(2).join(':');
+          }
+        }
+
+        if (address) {
+          return { address, chain: (chain || 'solana') as string };
+        }
+      }
+
+      // Case 2: Legacy custom token shape
+      if (payload.provider === 'solana' && payload.publicKey) {
+        return { address: payload.publicKey as string, chain: 'solana' };
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
