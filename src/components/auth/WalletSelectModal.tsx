@@ -69,6 +69,7 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                 key={name}
                 type="button"
                 onClick={async () => {
+                  console.log("Connecting...")
                   if (disabled) return;
                   select(name);
                   try {

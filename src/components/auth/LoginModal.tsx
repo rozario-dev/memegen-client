@@ -12,7 +12,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { setSolanaWallet } = useAuth();
-  const { connected, connecting, publicKey, connect, wallet } = useWallet();
+  const { connected, connecting, publicKey, wallet } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [showWalletSelect, setShowWalletSelect] = useState(false);
