@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletReadyState } from '@solana/wallet-adapter-base';
+import { WalletSelectModal } from './WalletSelectModal';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { connected, connecting, publicKey, connect, wallets, wallet, select } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [showWalletSelect, setShowWalletSelect] = useState(false);
 
   const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -47,7 +49,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const loadable = wallets.find(w => w.readyState === WalletReadyState.Loadable);
     const target = phantom || installed || loadable;
     if (!target) {
-      throw new Error('No available Solana wallet detected. Please install Phantom or open in a supported wallet.');
+      // 无可用钱包时，展示选择弹窗，交由用户处理（避免直接抛错打断体验）
+      setShowWalletSelect(true);
+      return;
     }
     select(target.adapter.name);
   };
@@ -80,6 +84,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       let didConnectNow = false;
       if (!connected) {
         autoSelectWalletIfNeeded();
+        // 如果用户需要先选择钱包，则等待用户选择后再继续（由再次点击按钮触发）
+        if (!wallet) {
+          return; // 打开了选择弹窗或尚未选择钱包，提前返回
+        }
         await connect();
         didConnectNow = true;
       }
@@ -179,25 +187,35 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             </span>
           </button>
 
-          <button
-            onClick={handleSolanaLogin}
-            disabled={isLoading || connecting}
-            className="w-full flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-lg border hover:bg-gray-50"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" fill="url(#solana-gradient)"/>
-              <path d="M7.5 12.5L10 15l4.5-4.5L17 12.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <defs>
-                <linearGradient id="solana-gradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#9945FF"/>
-                  <stop offset="1" stopColor="#14F195"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            <span className="text-sm font-medium text-gray-700">
-              {loadingProvider === 'solana' ? 'Connecting...' : (connected ? 'Sign in with Solana' : 'Connect with Solana')}
-            </span>
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleSolanaLogin}
+              disabled={isLoading || connecting}
+              className="w-full flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-lg border hover:bg-gray-50"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="url(#solana-gradient)"/>
+                <path d="M7.5 12.5L10 15l4.5-4.5L17 12.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <defs>
+                  <linearGradient id="solana-gradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#9945FF"/>
+                    <stop offset="1" stopColor="#14F195"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="text-sm font-medium text-gray-700">
+                {loadingProvider === 'solana' ? 'Connecting...' : (connected ? 'Sign in with Solana' : 'Connect with Solana')}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowWalletSelect(true)}
+              className="text-xs text-gray-600 hover:text-gray-800 underline self-center"
+            >
+              Choose wallet
+            </button>
+          </div>
 
           {!isSupabaseConfigured && (
             <div className="text-center text-sm text-gray-500">
@@ -206,6 +224,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           )}
         </div>
       </div>
+
+      <WalletSelectModal isOpen={showWalletSelect} onClose={() => setShowWalletSelect(false)} />
     </div>
   );
 };

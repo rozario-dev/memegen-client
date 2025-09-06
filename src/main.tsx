@@ -9,6 +9,8 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
 import { SolanaMobileWalletAdapter, createDefaultAuthorizationResultCache, createDefaultAddressSelector, createDefaultWalletNotFoundHandler } from '@solana-mobile/wallet-adapter-mobile'
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
+import { BackpackWalletAdapter } from '@solana/wallet-adapter-backpack'
 
 // Ensure Buffer is available in browser for libs that expect Node.js Buffer
 if (typeof window !== 'undefined' && !(window as any).Buffer) {
@@ -33,8 +35,12 @@ if (typeof window !== 'undefined') {
 const network: WalletAdapterNetwork = (import.meta.env.VITE_SOLANA_NETWORK === 'mainnet' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet)
 const endpoint = import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network === WalletAdapterNetwork.Mainnet ? 'mainnet-beta' : 'devnet')
 const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://memegen.flipflop.plus'
+
+// Order matters for auto-selection fallback in LoginModal: Phantom > Backpack > Solflare > Installed/Loadable others
 const wallets = [
   new PhantomWalletAdapter(),
+  new BackpackWalletAdapter(),
+  new SolflareWalletAdapter({ network }),
   new SolanaMobileWalletAdapter({
     appIdentity: {
       name: 'memeGen',
