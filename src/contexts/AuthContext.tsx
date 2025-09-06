@@ -215,6 +215,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const isAuthenticated = apiService.isAuthenticated();
+  // 基于当前 token 判断是否为 Solana 自定义登录
+  const isSolanaAuth = (() => {
+    try {
+      const t = apiService.getToken();
+      return !!(t && isSolanaCustomToken(t));
+    } catch {
+      return false;
+    }
+  })();
 
   const value: AuthContextType = {
     user,
@@ -226,6 +235,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     solanaWalletAddress,
     setSolanaWallet,
+    isSolanaAuth,
   };
 
   return (

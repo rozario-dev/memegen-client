@@ -38,10 +38,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     navigate('/launch', { state: { imageUrl } });
   };
   
-  // Helper function to get credits consumed
-  const getCreditsConsumed = () => {
-    return 'credits_consumed' in result ? result.credits_consumed : 0;
-  };
   const [modifyState, setModifyState] = useState<ModifyState>({
     selectedImageUuid: null,
     selectedImageUrl: null,
@@ -408,7 +404,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           </div>
 
           {/* Metadata */}
-           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 md:p-6 p-3 mt-6">
+           {/* <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 md:p-6 p-3 mt-6">
              <div className="flex items-center space-x-3 mb-4">
                <div className="w-8 h-8 bg-gradient-to-r from-gray-500 to-blue-500 rounded-lg flex items-center justify-center">
                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -440,7 +436,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                  </div>
                </div>
              </div>
-           </div>
+           </div> */}
         </div>
       </div>
     </div>

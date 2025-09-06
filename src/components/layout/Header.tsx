@@ -11,7 +11,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logout, loading, solanaWalletAddress } = useAuth();
+  const { user, logout, loading, solanaWalletAddress, isSolanaAuth } = useAuth();
   const location = useLocation();
 
   const handleLogout = async () => {
@@ -140,23 +140,16 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
                     {(() => {                       
-                      // If we have a Solana wallet address, use it
-                      if (solanaWalletAddress) {
-                      return formatAddress(solanaWalletAddress, 4, 4);
+                      // 仅在 Solana 自定义登录下显示钱包地址
+                      if (isSolanaAuth && solanaWalletAddress) {
+                        return formatAddress(solanaWalletAddress, 4, 4);
                       }
-                      
-                      // Check if this is a Solana user based on email pattern
-                      const isSolanaUser = user.email?.includes('@solana.wallet') ||
-                                          !user.email || 
-                                          user.email === user.id;
-                      
-                      if (isSolanaUser) {
-                        // For Solana users, show truncated user ID
-                        return formatAddress(user.id, 4, 4);
-                      } else {
-                        // For regular users, show email
-                        return user.email;
+                      // 否则优先显示邮箱；没有邮箱则兜底显示用户 id 短串
+                      const hasEmail = !!user?.email && !user.email.includes('@solana.wallet');
+                      if (hasEmail) {
+                        return user!.email!;
                       }
+                      return formatAddress(user?.id || '', 4, 4);
                     })()} 
                   </span>
                   <button
