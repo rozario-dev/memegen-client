@@ -140,8 +140,6 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
                     {(() => {
-                      console.log("isSolanaAuth", isSolanaAuth);
-                      console.log("solanaWalletAddress", solanaWalletAddress);
                       if (isSolanaAuth && solanaWalletAddress) {
                         return formatAddress(solanaWalletAddress, 4, 4);
                       }

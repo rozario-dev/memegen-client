@@ -81,13 +81,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setIsLoading(true);
       setLoadingProvider('solana');
       await waitForSignedOut();
+
+      // 优先确保有已选钱包，若没有则先打开选择器
+      if (!wallet) {
+        setShowWalletSelect(true);
+        return; // 等待用户选择，再次点击继续
+      }
+
       let didConnectNow = false;
       if (!connected) {
-        autoSelectWalletIfNeeded();
-        // 如果用户需要先选择钱包，则等待用户选择后再继续（由再次点击按钮触发）
-        if (!wallet) {
-          return; // 打开了选择弹窗或尚未选择钱包，提前返回
-        }
         await connect();
         didConnectNow = true;
       }
@@ -225,7 +227,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      <WalletSelectModal isOpen={showWalletSelect} onClose={() => setShowWalletSelect(false)} />
+      <WalletSelectModal
+        isOpen={showWalletSelect}
+        onClose={() => setShowWalletSelect(false)}
+        onSelect={async () => {
+          try {
+            setIsLoading(true);
+            setLoadingProvider('solana');
+            // 选择钱包后立即尝试连接并登录
+            if (!connected) {
+              await connect();
+            }
+            let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+            if (!effectivePk) {
+              effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
+            }
+            const addr = effectivePk?.toBase58?.();
+            if (!addr) return;
+            setSolanaWallet(addr);
+            await new Promise((r) => setTimeout(r, 100));
+            const { data, error } = await supabase.auth.signInWithWeb3({
+              chain: 'solana',
+              statement: 'I accept the Terms of Service and want to sign in to this application',
+            });
+            if (error) {
+              console.error('Supabase Web3 signin error:', error);
+              alert(error.message || 'Web3 authentication failed');
+              return;
+            }
+            if (data?.user) {
+              onClose();
+            }
+          } catch (e) {
+            console.error(e);
+          } finally {
+            setIsLoading(false);
+            setLoadingProvider(null);
+          }
+        }}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { WalletReadyState } from '@solana/wallet-adapter-base';
 interface WalletSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSelect?: (walletName: string) => void;
 }
 
 const readinessOrder = (state: WalletReadyState) => {
@@ -34,7 +35,7 @@ const readinessLabel = (state: WalletReadyState) => {
   }
 };
 
-export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, onClose }) => {
+export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, onClose, onSelect }) => {
   const { wallets, select } = useWallet();
 
   if (!isOpen) return null;
@@ -70,6 +71,7 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                 onClick={() => {
                   if (disabled) return;
                   select(name);
+                  onSelect?.(name);
                   onClose();
                 }}
                 disabled={disabled}
