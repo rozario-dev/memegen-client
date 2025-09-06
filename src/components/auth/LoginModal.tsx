@@ -157,13 +157,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         onClose={() => setShowWalletSelect(false)}
         onSelect={async ({ publicKey: selectedPk } = {} as any) => {
           try {
+            console.log("===login modal: 1===", publicKey)
             setIsLoading(true);
             setLoadingProvider('solana');
             let addr = selectedPk;
             if (!addr) {
+              console.log("===login modal: 2===")
               let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
+              console.log("===login modal: 3===", effectivePk)
               if (!effectivePk) {
                 effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
+                console.log("===login modal: 4===", effectivePk)
               }
               addr = effectivePk?.toBase58?.();
             }
@@ -171,6 +175,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             if (!addr) {
               throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
             }
+            console.log("===login modal: 5===", addr)
             setSolanaWallet(addr);
             
             // 轻微延时，稳定事件流
@@ -184,6 +189,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             };
             
             let { data, error } = await attemptSignIn();
+            console.log("===login modal: 6===", data, error)
             if (error) {
               const msg = (error.message || '').toLowerCase();
               const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
@@ -200,6 +206,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               }
               throw new Error(`Web3 authentication failed: ${error.message}`);
             }
+            console.log("===login modal: 7===", data.user)
             if (data?.user) {
               console.log('Supabase Web3 sign in successful!');
             }

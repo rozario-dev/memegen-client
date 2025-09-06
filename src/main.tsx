@@ -35,7 +35,7 @@ if (typeof window !== 'undefined') {
 const network: WalletAdapterNetwork = (import.meta.env.VITE_SOLANA_NETWORK === 'mainnet' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet)
 const endpoint = import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network === WalletAdapterNetwork.Mainnet ? 'mainnet-beta' : 'devnet')
 const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://memegen.flipflop.plus'
-
+console.log("appUrl: ", appUrl);
 // Order matters for auto-selection fallback in LoginModal: Phantom > Backpack > Solflare > Installed/Loadable others
 const wallets = [
   new PhantomWalletAdapter(),
@@ -45,7 +45,7 @@ const wallets = [
     appIdentity: {
       name: 'memeGen',
       uri: appUrl,
-      icon: `${appUrl}/logo.png`,
+      icon: '/logo.png',
     },
     authorizationResultCache: createDefaultAuthorizationResultCache(),
     addressSelector: createDefaultAddressSelector(),
@@ -66,20 +66,22 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 // Dev-only mobile console (eruda)
-const shouldLoadEruda =
-  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
-  window.location.hash.includes('eruda');
+if (import.meta.env.VITE_SOLANA_NETWORK === "devnet") {
+  const shouldLoadEruda =
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    window.location.hash.includes('eruda');
 
-if (shouldLoadEruda) {
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/eruda';
-  s.async = true;
-  s.onload = () => {
-    // @ts-ignore
-    window.eruda?.init();
-    // 如需一加载就展开面板，可保留 show；不需要的话可以去掉
-    // @ts-ignore
-    window.eruda?.show();
-  };
-  document.body.appendChild(s);
+  if (shouldLoadEruda) {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/eruda';
+    s.async = true;
+    s.onload = () => {
+      // @ts-ignore
+      window.eruda?.init();
+      // 如需一加载就展开面板，可保留 show；不需要的话可以去掉
+      // @ts-ignore
+      window.eruda?.show();
+    };
+    document.body.appendChild(s);
+  }
 }
