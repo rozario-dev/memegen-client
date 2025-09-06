@@ -61,8 +61,8 @@ function App() {
         <div className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm shadow-lg rounded-xl bg-white border border-gray-200 p-3 flex items-center gap-3">
           <img src="/logo.svg" alt="App" className="w-8 h-8" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">安装 memeGen 到主屏幕</p>
-            <p className="text-xs text-gray-500">离线使用、更快加载、全屏体验</p>
+            <p className="text-sm font-medium text-gray-900">Install memeGen</p>
+            {/* <p className="text-xs text-gray-500">Offline use, faster loading, fullscreen experience</p> */}
           </div>
           <button onClick={() => setShowInstallBanner(false)} className="text-xs text-gray-500 px-2 py-1">稍后</button>
           <button onClick={handleInstallClick} className="text-xs px-3 py-1 bg-purple-600 text-white rounded-md">安装</button>

@@ -10,13 +10,13 @@ export const Welcome: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center">
           {/* Logo and Title */}
           <div className="mb-8">
-            <div className="flex justify-center items-center mb-6">
+            <div className="flex justify-center items-center mt-12 mb-6">
               <img
                 src="/logo.svg"
                 alt="memeGen"
                 className="h-16 w-16 mr-4"
               />
-              <h1 className="text-5xl font-bold text-gray-900">
+              <h1 className="md:text-5xl md:mt-0 text-3xl font-bold text-gray-900">
                 memeGen
               </h1>
             </div>
@@ -69,7 +69,7 @@ export const Welcome: React.FC = () => {
           </div>
 
           {/* Additional Info */}
-          <div className="mt-12 text-center">
+          <div className="mt-12 mb-12 md:mb-0 text-center">
             <p className="text-gray-500 text-sm">
               Free to start • No credit card required • Instant access
             </p>

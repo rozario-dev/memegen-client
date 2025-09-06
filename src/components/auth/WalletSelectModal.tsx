@@ -81,12 +81,10 @@ export const WalletSelectModal: React.FC<WalletSelectModalProps> = ({ isOpen, on
                 onClick={async () => {
                   console.log("===wallet select modal: 1===")
                   if (disabled) return;
-                  // 保持上下文选择，确保 UI 一致
                   console.log("===wallet select modal: 2===")
                   select(name);
                   let pkBase58: string | undefined;
                   try {
-                    // 直接对被点击的适配器连接，避免依赖 useWallet 状态的异步刷新
                     await w.adapter.connect();
                     console.log("===wallet select modal: 3===")
                     const adapterPk = await waitForAdapterPublicKey(w.adapter);

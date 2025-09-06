@@ -107,7 +107,7 @@ export const MemeGenerationForm: React.FC<MemeGenerationFormProps> = ({ onGenera
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-blue-900">
-              Remaining Credits: {quota.remaining_quota} / {quota.total_quota}
+              Credits: {quota.remaining_quota} / {quota.total_quota}
             </span>
             <div className="w-32 bg-blue-200 rounded-full h-2">
               <div

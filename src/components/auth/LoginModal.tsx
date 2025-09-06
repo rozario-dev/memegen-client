@@ -154,7 +154,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       <WalletSelectModal
         isOpen={showWalletSelect}
         onClose={() => setShowWalletSelect(false)}
-        // LoginModal 组件内的 onSelect 回调里
         onSelect={async ({ publicKey: selectedPk } = {} as any) => {
           try {
             console.log("===login modal: 1===", publicKey)

@@ -78,7 +78,6 @@ if (import.meta.env.VITE_SOLANA_NETWORK === "devnet") {
     s.onload = () => {
       // @ts-ignore
       window.eruda?.init();
-      // 如需一加载就展开面板，可保留 show；不需要的话可以去掉
       // @ts-ignore
       window.eruda?.show();
     };
