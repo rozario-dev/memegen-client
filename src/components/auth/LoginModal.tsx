@@ -235,15 +235,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             setIsLoading(true);
             setLoadingProvider('solana');
             let didConnectNow = false;
-            // 选择钱包后立即尝试连接并登录
+            console.log("===1===")
             if (!connected) {
               await connect();
               didConnectNow = true;
             }
+            console.log("===2===")
             let effectivePk: any = (wallet as any)?.adapter?.publicKey ?? publicKey;
             if (!effectivePk) {
               effectivePk = await waitForPublicKey(() => (wallet as any)?.adapter?.publicKey ?? publicKey);
             }
+            console.log("===3===")
             const addr = effectivePk?.toBase58?.();
             if (!addr) {
               throw new Error('Failed to obtain wallet public key. Please approve in wallet and try again.');
@@ -252,6 +254,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             if (didConnectNow) {
               await new Promise((r) => setTimeout(r, 400));
             }
+            console.log("===4===")
             await new Promise((r) => setTimeout(r, 100));
             const attemptSignIn = async () => {
               return supabase.auth.signInWithWeb3({
@@ -259,7 +262,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 statement: 'I accept the Terms of Service and want to sign in to this application',
               });
             };
+            console.log("===5===")
             let { data, error } = await attemptSignIn();
+            console.log("===6===")
             if (error) {
               const msg = (error.message || '').toLowerCase();
               const isUserReject = msg.includes('reject') || msg.includes('denied') || msg.includes('declin');
@@ -268,6 +273,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 ({ data, error } = await attemptSignIn());
               }
             }
+            console.log("===7===")
             if (error) {
               console.error('Supabase Web3 signin error:', error);
               if (error.message?.includes('Web3 provider not enabled') || error.message?.includes('provider not configured')) {
@@ -279,7 +285,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               console.log('Supabase Web3 sign in successful!');
             }
           } catch (e) {
-            console.error(e);
+            console.log("Connect error", e)
           } finally {
             setIsLoading(false);
             setLoadingProvider(null);
