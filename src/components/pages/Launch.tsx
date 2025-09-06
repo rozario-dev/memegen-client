@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocation, Navigate } from 'react-router-dom';
 import { compressImage, formatAddress } from '../../lib/format';
-import { useAnchorWallet, useConnection, useWallet, type AnchorWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useWallet, type AnchorWallet } from '@solana/wallet-adapter-react';
 
 const LazyLaunchTokenButton = React.lazy(() => import('@flipflop-sdk/tools').then(m => ({ default: m.LaunchTokenButton })));
 
@@ -30,7 +30,7 @@ export const Launch: React.FC<LaunchProps> = () => {
   const [createStatus, setCreateStatus] = useState<{ type: 'success' | 'error' | null; message: string; tokenUrl?: string; tx?: string }>({ type: null, message: '' });
   const [dragActive, setDragActive] = useState(false);
 
-  const wallet = useAnchorWallet();
+  // const wallet = useAnchorWallet();
   const { connection } = useConnection();
 
   // 为 SDK 构建带 sendTransaction 的钱包适配（移动端浏览器必需）
