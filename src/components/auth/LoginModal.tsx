@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletReadyState } from '@solana/wallet-adapter-base';
+// import { WalletReadyState } from '@solana/wallet-adapter-base';
 import { WalletSelectModal } from './WalletSelectModal';
 
 interface LoginModalProps {
@@ -12,7 +12,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { setSolanaWallet } = useAuth();
-  const { connected, connecting, publicKey, connect, wallets, wallet, select } = useWallet();
+  const { connected, connecting, publicKey, connect, wallet } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [showWalletSelect, setShowWalletSelect] = useState(false);
@@ -42,19 +42,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const autoSelectWalletIfNeeded = () => {
-    if (wallet) return; // already selected
-    const phantom = wallets.find(w => w.adapter.name === 'Phantom' && (w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable));
-    const installed = wallets.find(w => w.readyState === WalletReadyState.Installed);
-    const loadable = wallets.find(w => w.readyState === WalletReadyState.Loadable);
-    const target = phantom || installed || loadable;
-    if (!target) {
-      // 无可用钱包时，展示选择弹窗，交由用户处理（避免直接抛错打断体验）
-      setShowWalletSelect(true);
-      return;
-    }
-    select(target.adapter.name);
-  };
+  // const autoSelectWalletIfNeeded = () => {
+  //   if (wallet) return; // already selected
+  //   const phantom = wallets.find(w => w.adapter.name === 'Phantom' && (w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable));
+  //   const installed = wallets.find(w => w.readyState === WalletReadyState.Installed);
+  //   const loadable = wallets.find(w => w.readyState === WalletReadyState.Loadable);
+  //   const target = phantom || installed || loadable;
+  //   if (!target) {
+  //     setShowWalletSelect(true);
+  //     return;
+  //   }
+  //   select(target.adapter.name);
+  // };
 
   const waitForPublicKey = async (getPk: () => any, timeoutMs = 3000) => {
     const start = Date.now();
@@ -82,10 +81,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setLoadingProvider('solana');
       await waitForSignedOut();
 
-      // 优先确保有已选钱包，若没有则先打开选择器
       if (!wallet) {
         setShowWalletSelect(true);
-        return; // 等待用户选择，再次点击继续
+        return;
       }
 
       let didConnectNow = false;
