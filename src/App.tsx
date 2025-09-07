@@ -8,6 +8,7 @@ import { Launch } from './components/pages/Launch';
 import { Welcome } from './components/pages/Welcome';
 import { useAuth } from './hooks/useAuth';
 import { useEffect, useState } from 'react';
+import { Account } from './components/pages/Account';
 
 function App() {
   const { user, loading } = useAuth();
@@ -64,7 +65,6 @@ function App() {
             <p className="text-sm font-medium text-gray-900">Install MemeGen</p>
             {/* <p className="text-xs text-gray-500">Offline use, faster loading, fullscreen experience</p> */}
           </div>
-          <button onClick={() => setShowInstallBanner(false)} className="text-xs text-gray-500 px-2 py-1">稍后</button>
           <button onClick={handleInstallClick} className="text-xs px-3 py-1 bg-purple-600 text-white rounded-md">安装</button>
         </div>
       )}
@@ -85,6 +85,7 @@ function App() {
               <Route path="/edit" element={<Edit />} />
               <Route path="/history" element={<History />} />
               <Route path="/launch" element={<Launch />} />
+              <Route path="/account" element={<Account />} />
               {/* Redirect any unknown routes to create when logged in */}
               <Route path="*" element={<Navigate to="/create" replace />} />
             </Routes>

@@ -154,15 +154,15 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
                   {isAccountMenuOpen && (
                     <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 overflow-hidden">
-                      <button
+                      <Link
+                        to="/account"
                         onClick={() => {
                           setIsAccountMenuOpen(false);
-                          alert('Funding');
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
-                        Funding
-                      </button>
+                        Account
+                      </Link>
                       <button
                         onClick={() => {
                           setIsAccountMenuOpen(false);

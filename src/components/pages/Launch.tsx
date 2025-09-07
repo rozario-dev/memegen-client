@@ -33,7 +33,6 @@ export const Launch: React.FC<LaunchProps> = () => {
   // const wallet = useAnchorWallet();
   const { connection } = useConnection();
 
-  // 为 SDK 构建带 sendTransaction 的钱包适配（移动端浏览器必需）
   const walletCtx = useWallet();
   const walletForSdk = useMemo(() => {
     if (!walletCtx?.publicKey) return null;
@@ -184,7 +183,6 @@ export const Launch: React.FC<LaunchProps> = () => {
   // console.log('formData.symbol', formData.symbol);
   // console.log('wallet', wallet);
 
-  // 用 walletForSdk 替换原有的判断，确保 sendTransaction 存在
   const formNotReady = !formData.name.trim() || !formData.symbol.trim() || !formData.image || !walletForSdk?.sendTransaction;
 
   return (
@@ -400,9 +398,6 @@ export const Launch: React.FC<LaunchProps> = () => {
                     onStart={() => {
                       setIsCreating(true);
                       setCreateStatus({ type: null, message: '' });
-                      // 便于调试移动端浏览器场景
-                      console.log('[Launch] wallet pubkey:', walletCtx?.publicKey?.toBase58?.());
-                      console.log('[Launch] has sendTransaction:', !!walletCtx?.sendTransaction);
                     }}
                     onSuccess={(data: any) => {
                       setIsCreating(false);

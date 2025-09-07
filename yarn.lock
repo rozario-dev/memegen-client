@@ -428,10 +428,10 @@
     "@eslint/core" "^0.15.1"
     levn "^0.4.1"
 
-"@flipflop-sdk/tools@^0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@flipflop-sdk/tools/-/tools-0.3.8.tgz#b4bdefe3380c55d2a9e381e18072675f70fcd917"
-  integrity sha512-ci/PzdzXDnWJa9bxVeYXqNXv2zvLH5A08j7DUpTdo3WplB/Ky04TeDC9Aa7NrPvEY2iqru8dFumLyfn5rwNWQQ==
+"@flipflop-sdk/tools@^0.3.9":
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/@flipflop-sdk/tools/-/tools-0.3.9.tgz#b1a0db4e05732bb5d885776799c71bbfcbb1a0d1"
+  integrity sha512-dasuETtN1tziLdbMxUFLm8xWL6l+d19HKQVGc1XcyGzHJnTch1s+z2Vk4YSWdQMduhN37oWXjeSy5/vpzK+EJg==
   dependencies:
     "@coral-xyz/anchor" "^0.31.1"
     "@raydium-io/raydium-sdk-v2" "^0.1.133-alpha"
