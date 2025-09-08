@@ -96,6 +96,8 @@ export const Account: React.FC = () => {
   const tryPayNow = async () => {
     if (!paymentInfo) return;
     if (!wallet.publicKey || !wallet.sendTransaction) {
+      console.log("public key", wallet.publicKey);
+      console.log("sendTransaction", wallet.sendTransaction);
       setPayError('Wallet not connected. Please connect your Solana wallet.');
       return;
     }

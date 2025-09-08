@@ -30,7 +30,6 @@ export const Launch: React.FC<LaunchProps> = () => {
   const [createStatus, setCreateStatus] = useState<{ type: 'success' | 'error' | null; message: string; tokenUrl?: string; tx?: string }>({ type: null, message: '' });
   const [dragActive, setDragActive] = useState(false);
 
-  // const wallet = useAnchorWallet();
   const { connection } = useConnection();
 
   const walletCtx = useWallet();
