@@ -96,8 +96,6 @@ export const Account: React.FC = () => {
   const tryPayNow = async () => {
     if (!paymentInfo) return;
     if (!wallet.publicKey || !wallet.sendTransaction) {
-      console.log("public key", wallet.publicKey);
-      console.log("sendTransaction", wallet.sendTransaction);
       setPayError('Wallet not connected. Please connect your Solana wallet.');
       return;
     }
@@ -132,7 +130,7 @@ export const Account: React.FC = () => {
       }
 
       // After on-chain success, start a 5s countdown to allow backend/IPN to process
-      setCountdown(30);
+      setCountdown(60);
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
