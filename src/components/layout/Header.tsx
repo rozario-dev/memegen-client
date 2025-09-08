@@ -142,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 <div className="relative">
                   <button
                     onClick={() => setIsAccountMenuOpen((v) => !v)}
-                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors text-sm flex items-center gap-2"
+                    className="px-4 py-2 cursor-pointer rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors text-sm flex items-center gap-2"
                   >
                     <span className="truncate max-w-[180px]" title={user.email || ''}>
                       {user.email}

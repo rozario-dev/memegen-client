@@ -249,3 +249,10 @@ export interface PaymentRecord {
   ipn_payload?: unknown;
 }
 
+export interface PaymentCancelResponse {
+  success: boolean;
+  message: string;
+  payment_id?: number;
+  payment_status?: string;
+}
+

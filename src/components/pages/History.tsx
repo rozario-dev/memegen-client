@@ -221,8 +221,8 @@ export const History: React.FC = () => {
                 onClick={() => setHideFailedRecords(!hideFailedRecords)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   hideFailedRecords
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer'
                 }`}
               >
                 {hideFailedRecords ? 'Show all' : 'Hide Fail'}

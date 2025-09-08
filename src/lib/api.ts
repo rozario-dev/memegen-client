@@ -197,6 +197,18 @@ class ApiService {
     return response.data;
   }
 
+  // Cancel a payment by payment_id
+  async cancelPayment(paymentId: number): Promise<{ success: boolean; message: string; payment_id?: number; payment_status?: string }> {
+    const response = await this.api.post('/payments/cancel', { payment_id: paymentId });
+    const data: any = response.data;
+    // Normalize shape: backend may return {ok, message, payment_id} or {success, message, ...}
+    const success = typeof data?.success !== 'undefined' ? Boolean(data.success) : Boolean(data?.ok);
+    const message = data?.message ?? (success ? 'Canceled' : 'Cancel failed');
+    const payment_id = typeof data?.payment_id === 'number' ? data.payment_id : paymentId;
+    const payment_status = typeof data?.payment_status === 'string' ? data.payment_status : undefined;
+    return { success, message, payment_id, payment_status };
+  }
+
   // async getQuotaUsage(limit: number = 50): Promise<UsageHistory> {
   //   const response = await this.api.get<UsageHistory>(`/auth/quota/usage?limit=${limit}`);
   //   return response.data;
@@ -243,30 +255,33 @@ class ApiService {
   async getImageHistory(limit?: number, offset?: number): Promise<ImageHistoryResponse> {
     try {
       const params = new URLSearchParams();
-      if (limit !== undefined) {
-        params.append('limit', limit.toString());
-      }
-      if (offset !== undefined) {
-        params.append('offset', offset.toString());
-      }
-      
-      const url = `/auth/image-history${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await this.api.get<ImageHistoryResponse>(url);
-      return response.data;
+      if (typeof limit === 'number') params.set('limit', String(limit));
+      if (typeof offset === 'number') params.set('offset', String(offset));
+      const response = await this.api.get(`/auth/image-history?${params.toString()}`);
+      return response.data.data || response.data;
     } catch (error) {
       throw error;
     }
   }
 
-  // Solana authentication (using custom token approach)
-  // Note: This method is no longer needed as we use custom token generation
-  // Keeping for potential future backend integration
   async authenticateWithSolana(_publicKey: string, _signature: string, _message: string): Promise<{ token: string; user: UserProfile }> {
-    // This endpoint doesn't exist yet - would need backend implementation
-    throw new Error('Solana backend authentication not implemented. Using custom token approach instead.');
+    // TODO: Implement real authentication via backend endpoint
+    // Keeping the same interface for future integration
+    return {
+      token: 'dev-token-placeholder',
+      user: {
+        id: 'solana-user-dev',
+        email: 'solana@dev.local',
+        quota: {
+          user_id: 'solana-user-dev',
+          total_quota: 0,
+          used_quota: 0,
+          remaining_quota: 0,
+        },
+      }
+    };
   }
 
-  // Helper method for polling async tasks
   async pollTaskStatus(
     taskId: string,
     onUpdate: (status: TaskStatus) => void,
@@ -274,28 +289,38 @@ class ApiService {
     onError: (error: ApiError) => void,
     intervalMs: number = 2000
   ) {
-    const poll = async () => {
-      try {
-        const status = await this.getTaskStatus(taskId);
-        onUpdate(status);
-
-        if (status.status === 'completed' || status.status === 'failed') {
-          onComplete(status);
-          return;
-        }
-
-        setTimeout(poll, intervalMs);
-      } catch (error) {
-        onError(error as ApiError);
-      }
+    let timer: number | undefined;
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
     };
 
-    poll();
+    try {
+      const initial = await this.getTaskStatus(taskId);
+      onUpdate(initial);
+      if (initial.status === 'completed' || initial.status === 'failed') {
+        onComplete(initial);
+        return stop();
+      }
+
+      timer = window.setInterval(async () => {
+        try {
+          const status = await this.getTaskStatus(taskId);
+          onUpdate(status);
+          if (status.status === 'completed' || status.status === 'failed') {
+            onComplete(status);
+            stop();
+          }
+        } catch (err) {
+          onError(this.handleApiError(err));
+          stop();
+        }
+      }, intervalMs);
+    } catch (err) {
+      onError(this.handleApiError(err));
+      stop();
+    }
   }
 }
 
-// Export singleton instance
 export const apiService = new ApiService();
-
-// Re-export types for convenience
 export * from './types';

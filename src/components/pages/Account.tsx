@@ -26,6 +26,12 @@ export const Account: React.FC = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
+  // New: cancel modal states
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<PaymentRecord | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelResult, setCancelResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const { connection } = useConnection();
   const wallet = useWallet();
 
@@ -93,6 +99,38 @@ export const Account: React.FC = () => {
     }
   };
 
+  // New: open existing waiting record with the same Topup modal
+  const onClickPay = async (r: PaymentRecord) => {
+    if (!isSolanaAuth) {
+      alert('Only Solana wallet top-up is supported. Please login with Solana.');
+      return;
+    }
+    try {
+      setPayError(null);
+      const info: PaymentCreateResponse = {
+        payment_id: r.payment_id,
+        order_id: r.order_id,
+        pay_address: r.pay_address,
+        pay_amount: r.pay_amount,
+        pay_currency: r.pay_currency,
+        price_amount: r.price_amount,
+        price_currency: r.price_currency,
+      };
+      setPaymentInfo(info);
+      const { toDataURL } = (await import('qrcode')) as any;
+      const params = new URLSearchParams();
+      if (info.pay_amount) params.set('amount', String(info.pay_amount));
+      const uri = `solana:${info.pay_address}?${params.toString()}`;
+      const dataUrl = await toDataURL(uri, { margin: 1, width: 256 });
+      setQrDataUrl(dataUrl);
+      setCountdown(0);
+      setModalOpen(true);
+    } catch (e) {
+      console.error('Open pay modal from record failed', e);
+      alert('Failed to open payment modal');
+    }
+  };
+
   const tryPayNow = async () => {
     if (!paymentInfo) return;
     if (!wallet.publicKey || !wallet.sendTransaction) {
@@ -157,6 +195,42 @@ export const Account: React.FC = () => {
 
   const handleRecharge = () => {
     void openTopupModal();
+  };
+
+  // New: cancelable status
+  const canCancel = (status?: string) => {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return s === 'pending' || s === 'waiting';
+  };
+
+  // New: open cancel modal
+  const onClickCancel = (r: PaymentRecord) => {
+    setCancelTarget(r);
+    setCancelResult(null);
+    setCancelModalOpen(true);
+  };
+
+  // New: confirm cancel
+  const confirmCancel = async () => {
+    if (!cancelTarget) return;
+    try {
+      setCancelLoading(true);
+      const res = await apiService.cancelPayment(cancelTarget.payment_id);
+      setCancelResult({ success: !!res?.success, message: res?.message || 'Cancel result returned' });
+      await loadRecords();
+    } catch (e: any) {
+      setCancelResult({ success: false, message: e?.message || e?.detail || 'Cancel failed' });
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const closeCancelModal = () => {
+    if (cancelLoading) return;
+    setCancelModalOpen(false);
+    setCancelTarget(null);
+    setCancelResult(null);
   };
 
   if (loading) {
@@ -319,8 +393,7 @@ export const Account: React.FC = () => {
                       <th className="py-2 pr-4">SOL Payed</th>
                       <th className="py-2 pr-4">Credit</th>
                       <th className="py-2 pr-4">Status</th>
-                      {/* <th className="py-2 pr-4">Processed</th> */}
-                      {/* <th className="py-2 pr-4">Order</th> */}
+                      <th className="py-2 pr-0 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -333,8 +406,7 @@ export const Account: React.FC = () => {
                           <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-20" /></td>
                           <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-10" /></td>
                           <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-12" /></td>
-                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-40" /></td>
-                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-24" /></td>
+                          <td className="py-2 pr-0"><div className="h-4 bg-gray-200 rounded animate-pulse w-10 ml-auto" /></td>
                         </tr>
                       ))
                     ) : records && records.length > 0 ? (
@@ -355,14 +427,39 @@ export const Account: React.FC = () => {
                             <td className="py-2 pr-4">
                               <span className={`px-2 py-0.5 rounded text-xs border ${r.payment_status === 'finished' ? 'bg-green-50 border-green-200 text-green-700' : r.payment_status === 'failed' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}>{r.payment_status}</span>
                             </td>
-                            {/* <td className="py-2 pr-4">{r.processed ? 'Yes' : 'No'}</td> */}
-                            {/* <td className="py-2 pr-4 text-gray-700" title={r.order_id}>
-                              {(() => {
-                                const parts = (r.order_id ?? '').split(':');
-                                const last = parts[parts.length - 1];
-                                return last || r.order_id;
-                              })()}
-                            </td> */}
+                            <td className="py-2 pr-0 text-right">
+                              {r.payment_status?.toLowerCase() === 'waiting' ? (
+                                <div className="inline-flex items-center gap-2">
+                                  <button
+                                    className="inline-flex items-center px-2.5 h-7 rounded-md border border-purple-200 text-purple-700 hover:bg-purple-50 cursor-pointer"
+                                    title="Pay this payment"
+                                    aria-label={`Pay payment ${r.payment_id}`}
+                                    onClick={() => void onClickPay(r)}
+                                  >
+                                    Pay
+                                  </button>
+                                  <button
+                                    className="inline-flex items-center justify-center h-7 w-7 rounded-md border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                                    title="Cancel this payment"
+                                    aria-label={`Cancel payment ${r.payment_id}`}
+                                    onClick={() => onClickCancel(r)}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : canCancel(r.payment_status) ? (
+                                <button
+                                  className="inline-flex items-center justify-center h-7 w-7 rounded-md border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                                  title="Cancel this payment"
+                                  aria-label={`Cancel payment ${r.payment_id}`}
+                                  onClick={() => onClickCancel(r)}
+                                >
+                                  ✕
+                                </button>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
                           </tr>
                         ))}
                         {Array.from({ length: Math.max(0, PAGE_SIZE - (records?.length ?? 0)) }).map((_, i) => (
@@ -373,8 +470,7 @@ export const Account: React.FC = () => {
                             <td className="py-2 pr-4 text-transparent">-</td>
                             <td className="py-2 pr-4 text-transparent">-</td>
                             <td className="py-2 pr-4 text-transparent">-</td>
-                            <td className="py-2 pr-4 text-transparent">-</td>
-                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-0 text-transparent">-</td>
                           </tr>
                         ))}
                       </>
@@ -391,8 +487,7 @@ export const Account: React.FC = () => {
                             <td className="py-2 pr-4 text-transparent">-</td>
                             <td className="py-2 pr-4 text-transparent">-</td>
                             <td className="py-2 pr-4 text-transparent">-</td>
-                            <td className="py-2 pr-4 text-transparent">-</td>
-                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-0 text-transparent">-</td>
                           </tr>
                         ))}
                       </>
@@ -434,7 +529,6 @@ export const Account: React.FC = () => {
               {qrDataUrl && (
                 <div className="flex flex-col items-center gap-2 mt-2">
                   <img src={qrDataUrl} alt="QR Code" className="w-48 h-48 border border-gray-200 rounded" />
-                  {/* <a className="text-purple-600 text-sm hover:underline" href={solanaUri} target="_blank" rel="noreferrer">Open in wallet: {solanaUri}</a> */}
                 </div>
               )}
             </div>
@@ -448,11 +542,61 @@ export const Account: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <button onClick={() => void tryPayNow()} disabled={paying} className={`px-4 py-2 rounded-lg text-white transition-colors ${paying ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}>{paying ? 'Paying...' : 'Pay now with wallet'}</button>
+                <button onClick={() => void tryPayNow()} disabled={paying} className={`px-4 py-2 rounded-lg text-white transition-colors cursor-pointer ${paying ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}>{paying ? 'Paying...' : 'Pay now with wallet'}</button>
                 <button onClick={() => setModalOpen(false)} disabled={paying} className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50">Close</button>
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* New: Cancel confirm/result Modal */}
+      {cancelModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={closeCancelModal}></div>
+          <div className="relative bg-white rounded-xl shadow-xl w-[95%] max-w-md p-6 border border-gray-200">
+            <button
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              onClick={closeCancelModal}
+              aria-label="Close"
+              disabled={cancelLoading}
+            >✕</button>
+
+            {!cancelResult ? (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Confirm cancellation</h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  Are you sure you want to cancel payment
+                  {cancelTarget ? ` #${cancelTarget.payment_id}` : ''}?
+                </p>
+                <div className="flex items-center justify-end gap-3">
+                  <button
+                    className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+                    onClick={closeCancelModal}
+                    disabled={cancelLoading}
+                  >No</button>
+                  <button
+                    className={`px-4 py-2 rounded-lg text-white ${cancelLoading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+                    onClick={() => void confirmCancel()}
+                    disabled={cancelLoading}
+                  >{cancelLoading ? 'Cancelling...' : 'Yes, cancel'}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Cancel result</h3>
+                <div className={`mb-4 text-sm ${cancelResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                  {cancelResult.message}
+                </div>
+                <div className="flex items-center justify-end">
+                  <button
+                    className="px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+                    onClick={closeCancelModal}
+                  >Close</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
