@@ -220,3 +220,32 @@ export interface PricingPlan {
   avgPrice: number; // $ per credit
 }
 
+// Payments
+export interface PaymentCreateResponse {
+  payment_id: number;
+  pay_address: string;
+  pay_amount: number; // amount in SOL to pay
+  pay_currency: string; // e.g., 'sol'
+  price_amount: number; // amount in USD
+  price_currency: string; // e.g., 'usd'
+  order_id: string;
+}
+
+export interface PaymentRecord {
+  payment_id: number;
+  order_id: string;
+  purchase_id?: string | null;
+  amount_usd?: number | null;
+  credits?: number | null;
+  price_amount: number;
+  price_currency: string;
+  pay_amount: number;
+  pay_currency: string;
+  pay_address: string;
+  payment_status: string; // e.g., pending, finished, failed
+  processed: boolean;
+  created_at: string;
+  updated_at: string;
+  ipn_payload?: unknown;
+}
+

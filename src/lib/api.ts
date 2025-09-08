@@ -11,7 +11,9 @@ import type {
   ImageModifyRequest,
   DirectImageGenerationResponse,
   ImageHistoryResponse,
-  ImageItem
+  ImageItem,
+  PaymentCreateResponse,
+  PaymentRecord
 } from './types';
 
 class ApiService {
@@ -171,6 +173,24 @@ class ApiService {
 
   async getUserQuota(): Promise<QuotaResponse> {
     const response = await this.api.get<QuotaResponse>('/auth/quota');
+    return response.data;
+  }
+
+  // Payments
+  async createPayment(amountUsd: number, payCurrency: string, orderDescription?: string, ipnCallbackUrl?: string): Promise<PaymentCreateResponse> {
+    const payload: Record<string, unknown> = {
+      amount_usd: amountUsd,
+      pay_currency: payCurrency,
+    };
+    if (orderDescription) payload.order_description = orderDescription;
+    if (ipnCallbackUrl) payload.ipn_callback_url = ipnCallbackUrl;
+    else payload.ipn_callback_url = import.meta.env.VITE_NOWPAYMENT_IPN_CALLBACK_URL;
+    const response = await this.api.post<PaymentCreateResponse>('/payments/create', payload);
+    return response.data;
+  }
+
+  async getPaymentRecords(limit: number = 50): Promise<PaymentRecord[]> {
+    const response = await this.api.get<PaymentRecord[]>(`/payments/records?limit=${limit}`);
     return response.data;
   }
 
