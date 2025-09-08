@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { PLANS } from '../../lib/constants';
 import type { PricingPlan } from '../../lib/types';
@@ -64,14 +64,6 @@ export const Account: React.FC = () => {
       alert('Copy failed, please copy manually');
     }
   };
-
-  const solanaUri = useMemo(() => {
-    if (!paymentInfo) return '';
-    // Basic solana: URI. Some wallets recognize amount param in SOL.
-    const params = new URLSearchParams();
-    if (paymentInfo.pay_amount) params.set('amount', String(paymentInfo.pay_amount));
-    return `solana:${paymentInfo.pay_address}?${params.toString()}`;
-  }, [paymentInfo]);
 
   const openTopupModal = async () => {
     if (!selectedPlan) return;
