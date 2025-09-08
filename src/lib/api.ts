@@ -189,8 +189,11 @@ class ApiService {
     return response.data;
   }
 
-  async getPaymentRecords(limit: number = 50): Promise<PaymentRecord[]> {
-    const response = await this.api.get<PaymentRecord[]>(`/payments/records?limit=${limit}`);
+  async getPaymentRecords(limit: number = 50, offset?: number): Promise<PaymentRecord[]> {
+    const params = new URLSearchParams();
+    params.set('limit', String(limit));
+    if (typeof offset === 'number' && offset >= 0) params.set('offset', String(offset));
+    const response = await this.api.get<PaymentRecord[]>(`/payments/records?${params.toString()}`);
     return response.data;
   }
 

@@ -4,7 +4,6 @@ import { PLANS } from '../../lib/constants';
 import type { PricingPlan } from '../../lib/types';
 import { apiService } from '../../lib/api';
 import type { PaymentCreateResponse, PaymentRecord } from '../../lib/types';
-// Removed: import * as QRCode from 'qrcode';
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 
@@ -24,6 +23,8 @@ export const Account: React.FC = () => {
   const [records, setRecords] = useState<PaymentRecord[] | null>(null);
   const [recordsLoading, setRecordsLoading] = useState(false);
   const [recordsError, setRecordsError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const { connection } = useConnection();
   const wallet = useWallet();
@@ -35,15 +36,15 @@ export const Account: React.FC = () => {
     // auto refresh quota on mount (optional)
     // void refreshQuota();
     void loadRecords();
-  }, [refreshQuota]);
+  }, [refreshQuota, page]);
 
   const loadRecords = async () => {
     if (!user) return;
     try {
       setRecordsLoading(true);
       setRecordsError(null);
-      const list = await apiService.getPaymentRecords(100);
-      console.log("list", list);
+      const offset = (page - 1) * PAGE_SIZE;
+      const list = await apiService.getPaymentRecords(PAGE_SIZE, offset);
       setRecords(list);
     } catch (e: any) {
       console.error('Failed to load payment records', e);
@@ -109,8 +110,10 @@ export const Account: React.FC = () => {
     setPayError(null);
     setPaying(true);
     try {
+      // Validate recipient address
       const to = new PublicKey(paymentInfo.pay_address);
-      const lamports = Math.round(paymentInfo.pay_amount * LAMPORTS_PER_SOL);
+      // Use ceil to avoid underpaying due to floating rounding (ensure >= required lamports)
+      const lamports = Math.ceil(paymentInfo.pay_amount * LAMPORTS_PER_SOL);
       const tx = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: wallet.publicKey,
@@ -118,15 +121,24 @@ export const Account: React.FC = () => {
           lamports,
         })
       );
-      const latest = await connection.getLatestBlockhash('finalized');
+      // Align commitment between preflight and blockhash to reduce mismatch errors
+      const latest = await connection.getLatestBlockhash('confirmed');
       tx.recentBlockhash = latest.blockhash;
       tx.feePayer = wallet.publicKey;
-      const sig = await wallet.sendTransaction(tx, connection, { skipPreflight: false });
+
+      const sig = await wallet.sendTransaction(tx, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 3,
+      });
       // Wait for confirmation
-      await connection.confirmTransaction({ signature: sig, ...latest }, 'confirmed');
+      const conf = await connection.confirmTransaction({ signature: sig, ...latest }, 'confirmed');
+      if (conf?.value?.err) {
+        throw new Error(`Transaction confirmed with error: ${JSON.stringify(conf.value.err)}`);
+      }
 
       // After on-chain success, start a 5s countdown to allow backend/IPN to process
-      setCountdown(5);
+      setCountdown(30);
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -144,7 +156,8 @@ export const Account: React.FC = () => {
       }, 1000);
     } catch (e: any) {
       console.error('Pay now failed', e);
-      setPayError(e?.message || 'Payment failed or cancelled');
+      const net = (import.meta as any).env?.VITE_SOLANA_NETWORK === 'mainnet' ? 'mainnet' : 'devnet';
+      setPayError((e?.message || 'Payment failed or cancelled') + ` (Network: ${net})`);
     } finally {
       setPaying(false);
     }
@@ -187,7 +200,7 @@ export const Account: React.FC = () => {
           <p className="text-gray-600">View your profile, quota, and top up</p>
         </div>
 
-        {/* Profile + Quota */}
+        {/* Profile + Credits */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Profile */}
           <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
@@ -216,10 +229,10 @@ export const Account: React.FC = () => {
             </div>
           </div>
 
-          {/* Quota */}
+          {/* Credits */}
           <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Quota</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Credits</h2>
               <button
                 onClick={() => void refreshQuota()}
                 className="text-sm px-3 py-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
@@ -291,59 +304,123 @@ export const Account: React.FC = () => {
 
         {/* Top-up Records */}
         <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Top-up Records</h2>
-          {recordsLoading ? (
-            <div className="rounded-lg border border-dashed border-gray-300 md:p-6 p-4 text-center text-gray-500">Loading records...</div>
-          ) : recordsError ? (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">Top-up Records</h2>
+            <button
+              onClick={() => void loadRecords()}
+              className="text-sm px-3 py-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+              disabled={recordsLoading}
+              aria-label="Refresh Top-up Records"
+            >{recordsLoading ? 'Refreshing...' : 'Refresh'}</button>
+          </div>
+          {recordsError ? (
             <div className="rounded-lg border border-red-200 bg-red-50 md:p-6 p-4 text-red-700">{recordsError}</div>
-          ) : !records || records.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-300 md:p-6 p-4 text-center text-gray-500">
-              No top-up records yet
-            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500">
-                    <th className="py-2 pr-4">Payment ID</th>
-                    <th className="py-2 pr-4">Time</th>
-                    <th className="py-2 pr-4">USD</th>
-                    <th className="py-2 pr-4">SOL</th>
-                    <th className="py-2 pr-4">Credit</th>
-                    <th className="py-2 pr-4">Status</th>
-                    {/* <th className="py-2 pr-4">Processed</th> */}
-                    {/* <th className="py-2 pr-4">Order ID</th> */}
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => (
-                    <tr key={`${r.payment_id}`} className="border-t border-gray-100">
-                      <td className="py-2 pr-4">{r.payment_id}</td>
-                      <td className="py-2 pr-4 text-gray-700">{new Date(r.created_at).toLocaleString()}</td>
-                      <td className="py-2 pr-4">{r.price_amount} {r.price_currency.toUpperCase()}</td>
-                      <td className="py-2 pr-4">{r.pay_amount} {r.pay_currency.toUpperCase()}</td>
-                      <td className="py-2 pr-4">
-                        {(() => {
-                          const parts = (r.order_id ?? '').split(':');
-                          const val = parts.length >= 3 ? Number(parts[2]) : NaN;
-                          return Number.isFinite(val) ? val : (r.credits ?? '-');
-                        })()}
-                      </td>
-                      <td className="py-2 pr-4">
-                        <span className={`px-2 py-0.5 rounded text-xs border ${r.payment_status === 'finished' ? 'bg-green-50 border-green-200 text-green-700' : r.payment_status === 'failed' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}>{r.payment_status}</span>
-                      </td>
-                      {/* <td className="py-2 pr-4">{r.processed ? 'Yes' : 'No'}</td> */}
-                      {/* <td className="py-2 pr-4 text-gray-700" title={r.order_id}>
-                        {(() => {
-                          const parts = (r.order_id ?? '').split(':');
-                          const last = parts[parts.length - 1];
-                          return last || r.order_id;
-                        })()}
-                      </td> */}
+            <div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500">
+                      <th className="py-2 pr-4">Payment ID</th>
+                      <th className="py-2 pr-4">Time</th>
+                      <th className="py-2 pr-4">USD</th>
+                      <th className="py-2 pr-4">SOL Payed</th>
+                      <th className="py-2 pr-4">Credit</th>
+                      <th className="py-2 pr-4">Status</th>
+                      {/* <th className="py-2 pr-4">Processed</th> */}
+                      {/* <th className="py-2 pr-4">Order</th> */}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {recordsLoading ? (
+                      Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                        <tr key={`sk-${i}`} className="border-t border-gray-100">
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-32" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-16" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-16" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-20" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-10" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-12" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-40" /></td>
+                          <td className="py-2 pr-4"><div className="h-4 bg-gray-200 rounded animate-pulse w-24" /></td>
+                        </tr>
+                      ))
+                    ) : records && records.length > 0 ? (
+                      <>
+                        {records?.map((r) => (
+                          <tr key={`${r.payment_id}`} className="border-t border-gray-100">
+                            <td className="py-2 pr-4">{r.payment_id}</td>
+                            <td className="py-2 pr-4 text-gray-700">{new Date(r.created_at).toLocaleString()}</td>
+                            <td className="py-2 pr-4">{r.price_amount} {r.price_currency.toUpperCase()}</td>
+                            <td className="py-2 pr-4">{r.pay_amount} {r.pay_currency.toUpperCase()}</td>
+                            <td className="py-2 pr-4">
+                              {(() => {
+                                const parts = (r.order_id ?? '').split(':');
+                                const val = parts.length >= 3 ? Number(parts[2]) : NaN;
+                                return Number.isFinite(val) ? val : (r.credits ?? '-');
+                              })()}
+                            </td>
+                            <td className="py-2 pr-4">
+                              <span className={`px-2 py-0.5 rounded text-xs border ${r.payment_status === 'finished' ? 'bg-green-50 border-green-200 text-green-700' : r.payment_status === 'failed' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}>{r.payment_status}</span>
+                            </td>
+                            {/* <td className="py-2 pr-4">{r.processed ? 'Yes' : 'No'}</td> */}
+                            {/* <td className="py-2 pr-4 text-gray-700" title={r.order_id}>
+                              {(() => {
+                                const parts = (r.order_id ?? '').split(':');
+                                const last = parts[parts.length - 1];
+                                return last || r.order_id;
+                              })()}
+                            </td> */}
+                          </tr>
+                        ))}
+                        {Array.from({ length: Math.max(0, PAGE_SIZE - (records?.length ?? 0)) }).map((_, i) => (
+                          <tr key={`ph-${i}`} className="border-t border-gray-100">
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                          </tr>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        <tr className="border-t border-gray-100">
+                          <td className="py-4 pr-4 text-gray-500 text-center" colSpan={8}>No top-up records yet</td>
+                        </tr>
+                        {Array.from({ length: PAGE_SIZE - 1 }).map((_, i) => (
+                          <tr key={`ph-empty-${i}`} className="border-t border-gray-100">
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                            <td className="py-2 pr-4 text-transparent">-</td>
+                          </tr>
+                        ))}
+                      </>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-end gap-2 mt-3">
+                <button
+                  className="px-3 py-1.5 text-sm rounded-md border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={recordsLoading || page === 1}
+                >Previous</button>
+                <span className="text-sm text-gray-600">Page {page}</span>
+                <button
+                  className="px-3 py-1.5 text-sm rounded-md border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={recordsLoading || (records !== null && records.length < PAGE_SIZE)}
+                >Next</button>
+              </div>
             </div>
           )}
         </div>

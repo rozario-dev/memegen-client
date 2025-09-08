@@ -35,7 +35,7 @@ if (typeof window !== 'undefined') {
 const network: WalletAdapterNetwork = (import.meta.env.VITE_SOLANA_NETWORK === 'mainnet' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet)
 const endpoint = import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network === WalletAdapterNetwork.Mainnet ? 'mainnet-beta' : 'devnet')
 const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://memegen.flipflop.plus'
-console.log("appUrl: ", appUrl);
+
 // Order matters for auto-selection fallback in LoginModal: Phantom > Backpack > Solflare > Installed/Loadable others
 const wallets = [
   new PhantomWalletAdapter(),
