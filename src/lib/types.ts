@@ -211,3 +211,12 @@ export interface ImageHistoryResponse {
   total_count: number;
   history: HistoryRecord[];
 }
+
+export interface PricingPlan {
+  usd: number;
+  credit: number;
+  bonus: number;
+  total: number;
+  avgPrice: number; // $ per credit
+}
+

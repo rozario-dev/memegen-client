@@ -1,24 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-
-interface PricingPlan {
-  usd: number;
-  credit: number;
-  bonus: number;
-  total: number;
-  avgPrice: number; // $ per credit
-}
-
-const PLANS: PricingPlan[] = [
-  { usd: 1, credit: 50, bonus: 0, total: 50, avgPrice: 0.02 },
-  { usd: 10, credit: 500, bonus: 50, total: 550, avgPrice: 0.0181818 },
-  { usd: 50, credit: 2500, bonus: 400, total: 2900, avgPrice: 0.017241379 },
-  { usd: 100, credit: 5000, bonus: 1200, total: 6200, avgPrice: 0.016129032 },
-  { usd: 200, credit: 10000, bonus: 3000, total: 13000, avgPrice: 0.015384615 },
-];
+import { PLANS } from '../../lib/constants';
+import type { PricingPlan } from '../../lib/types';
 
 export const Account: React.FC = () => {
-  const { user, quota, loading, refreshQuota } = useAuth();
+  const { user, quota, loading, refreshQuota, solanaWalletAddress } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(PLANS[1]);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
 
@@ -64,7 +50,7 @@ export const Account: React.FC = () => {
     return (
       <div className="pt-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg md:p-6 p-4">
             <h3 className="text-lg font-medium text-yellow-800 mb-2">Login Required</h3>
             <p className="text-yellow-700">Please sign in to view your account information.</p>
           </div>
@@ -84,11 +70,11 @@ export const Account: React.FC = () => {
         {/* Profile + Quota */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Profile */}
-          <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">基本资料</h2>
+          <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile</h2>
             <div className="space-y-4">
               <div>
-                <div className="text-sm text-gray-500 mb-1">用户ID</div>
+                <div className="text-sm text-gray-500 mb-1">User ID</div>
                 <div className="flex items-center gap-2">
                   <code className="px-2 py-1 bg-gray-50 border border-gray-200 rounded text-gray-800 text-sm break-all flex-1">{userId}</code>
                   <button
@@ -102,16 +88,16 @@ export const Account: React.FC = () => {
               </div>
 
               <div>
-                <div className="text-sm text-gray-500 mb-1">Email</div>
+                <div className="text-sm text-gray-500 mb-1">{!solanaWalletAddress ? "Email" : "Solana Address"}</div>
                 <div className="px-2 py-1 bg-gray-50 border border-gray-200 rounded text-gray-800 text-sm break-all">
-                  {email || 'Not set'}
+                  {!solanaWalletAddress ? email : solanaWalletAddress}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quota */}
-          <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Quota</h2>
               <button
@@ -137,12 +123,12 @@ export const Account: React.FC = () => {
         </div>
 
         {/* Recharge plans */}
-        <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-6 shadow-sm mb-8">
+        <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Top up</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {PLANS.map((plan) => {
               const selected = selectedPlan?.usd === plan.usd;
               return (
@@ -158,10 +144,11 @@ export const Account: React.FC = () => {
                     )}
                   </div>
                   <div className="mt-3 space-y-1 text-sm text-gray-700">
-                    <div>credits: <span className="font-medium text-gray-900">{plan.credit}</span></div>
-                    <div>bonus: <span className="font-medium text-gray-900">{plan.bonus}</span></div>
-                    <div>Total: <span className="font-medium text-gray-900">{plan.total}</span> credits</div>
-                    <div className="text-xs text-gray-500">Avg price: ${plan.avgPrice.toFixed(6)} / credit</div>
+                    {/* <div>credits: <span className="font-medium text-gray-900">{plan.credit}</span></div>
+                    <div>bonus: <span className="font-medium text-gray-900">{plan.bonus}</span></div> */}
+                    <div>Credits: <span className="font-medium text-gray-900">{plan.total}</span></div>
+                    <div>Max: <span className="font-medium text-gray-900">{plan.total} images</span></div>
+                    <div className="text-xs text-gray-500">Avg: ${(plan.avgPrice * 100).toFixed(2)} / 100 credit</div>
                   </div>
                 </button>
               );
@@ -178,9 +165,9 @@ export const Account: React.FC = () => {
         </div>
 
         {/* Recharge records */}
-        <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-white/80 backdrop-blur border border-gray-200 rounded-xl md:p-6 p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Top-up Records</h2>
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-gray-500">
+          <div className="rounded-lg border border-dashed border-gray-300 md:p-6 p-4 text-center text-gray-500">
             No top-up records yet (will appear after the top-up link is provided)
           </div>
         </div>

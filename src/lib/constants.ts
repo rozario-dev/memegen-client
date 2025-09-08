@@ -1,4 +1,4 @@
-import type { TierConfig, UserTierMap } from "./types";
+import type { PricingPlan, TierConfig, UserTierMap } from "./types";
 
 export const MAX_REFERENCE_IMAGES = 2;
 
@@ -160,3 +160,11 @@ export const STYLES = [
     "description": "Complex color gradients with delicate visual effects"
   }
 ]
+
+export const PLANS: PricingPlan[] = [
+  { usd: 3, credit: 150, bonus: 0, total: 50, avgPrice: 0.02 },
+  { usd: 10, credit: 500, bonus: 50, total: 550, avgPrice: 0.0182 },
+  { usd: 50, credit: 2500, bonus: 400, total: 2900, avgPrice: 0.0172 },
+  { usd: 100, credit: 5000, bonus: 1200, total: 6200, avgPrice: 0.01613 },
+  { usd: 200, credit: 10000, bonus: 3000, total: 13000, avgPrice: 0.0154 },
+];
