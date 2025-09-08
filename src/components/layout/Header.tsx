@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                           setIsAccountMenuOpen(false);
                           setIsLogoutConfirmOpen(true);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                       >
                         Logout
                       </button>
@@ -256,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsLogoutConfirmOpen(false)}
-                className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -265,7 +265,7 @@ export const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   setIsLogoutConfirmOpen(false);
                   await handleLogout();
                 }}
-                className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
+                className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 cursor-pointer"
               >
                 Yes
               </button>

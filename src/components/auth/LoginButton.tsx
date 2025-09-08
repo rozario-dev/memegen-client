@@ -45,7 +45,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({ className = '' }) => {
         </span>
         <button
           onClick={handleLogout}
-          className={`px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors ${className}`}
+          className={`px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer ${className}`}
         >
           Logout
         </button>
