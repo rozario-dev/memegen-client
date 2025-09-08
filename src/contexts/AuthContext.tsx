@@ -21,6 +21,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Wallet-adapter hook for Solana wallet state
   const { connected, publicKey, disconnect } = useWallet();
 
+  // 强制清理 Supabase 在 localStorage 中的会话键（以 sb- 开头）
+  const clearSupabaseAuthStorage = () => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key.startsWith('sb-')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+      console.warn('Failed to clear Supabase auth storage:', e);
+    }
+  };
+
   const initializeAuth = useCallback(async () => {
     try {
       // Restore Solana wallet address from localStorage for initial UI gating
@@ -133,8 +150,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setQuota(null);
       removeSolanaWallet();
 
-      // Sign out from Supabase (handles Google and GitHub)
+      // 先尝试调用 supabase signOut
       await supabase.auth.signOut();
+
+      // 无论 signOut 是否成功，兜底清理本地 Supabase 会话键，避免刷新后被恢复
+      clearSupabaseAuthStorage();
 
       // Disconnect Solana wallet if connected via wallet-adapter
       try {
@@ -144,6 +164,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error during logout:', error);
+      // 兜底清理（signOut 抛错的情况下也清理）
+      clearSupabaseAuthStorage();
     }
   };
 
